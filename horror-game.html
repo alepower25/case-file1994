@@ -1,0 +1,2124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CASE FILE 1994 — CLASSIFIED</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#100d09;width:100vw;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+canvas{display:block;}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+const W=960,H=640,TILE=72;
+const c=document.getElementById('c');
+c.width=W;c.height=H;
+const ctx=c.getContext('2d');
+
+// ── PRE-BAKED OVERLAYS ────────────────────────────────────────────────
+const scanC=document.createElement('canvas');scanC.width=W;scanC.height=H;
+const sc=scanC.getContext('2d');
+for(let y=0;y<H;y+=2){sc.fillStyle='rgba(0,0,0,0.13)';sc.fillRect(0,y,W,1);}
+
+const vigC=document.createElement('canvas');vigC.width=W;vigC.height=H;
+const vc2=vigC.getContext('2d');
+const vg_=vc2.createRadialGradient(W/2,H/2,W*.24,W/2,H/2,W*.76);
+vg_.addColorStop(0,'rgba(0,0,0,0)');vg_.addColorStop(.7,'rgba(0,0,0,0.06)');vg_.addColorStop(1,'rgba(0,0,0,0.7)');
+vc2.fillStyle=vg_;vc2.fillRect(0,0,W,H);
+
+// ── TEXTURES ──────────────────────────────────────────────────────────
+function mkWall(w,h){
+  const o=document.createElement('canvas');o.width=w;o.height=h;const x=o.getContext('2d');
+  x.fillStyle='#2c2318';x.fillRect(0,0,w,h);
+  for(let i=0;i<w*h*.22;i++){const b=(Math.random()-.5)*20;x.fillStyle=`rgba(${142+b|0},${115+b|0},${88+b|0},0.2)`;x.fillRect(Math.random()*w,Math.random()*h,Math.random()*2+.5,Math.random()*2+.5);}
+  x.strokeStyle='rgba(0,0,0,0.32)';x.lineWidth=.8;
+  for(let y=12;y<h;y+=15){x.beginPath();x.moveTo(0,y);x.lineTo(w,y);x.stroke();}
+  for(let i=10;i<w;i+=22){x.beginPath();x.moveTo(i,0);x.lineTo(i,h);x.stroke();}
+  x.fillStyle='rgba(255,255,255,0.04)';x.fillRect(0,0,w,2);
+  x.fillStyle='rgba(0,0,0,0.38)';x.fillRect(0,h-4,w,4);
+  return o;
+}
+function mkFloor(w,h){
+  const o=document.createElement('canvas');o.width=w;o.height=h;const x=o.getContext('2d');
+  x.fillStyle='#221a10';x.fillRect(0,0,w,h);
+  for(let tx=0;tx<w/20+1;tx++)for(let ty=0;ty<h/20+1;ty++){const b=(Math.sin(tx*2.1+ty*1.9)*8)|0;x.fillStyle=`rgb(${36+b},${27+b},${16+b})`;x.fillRect(tx*20+.5,ty*20+.5,19,19);}
+  for(let i=0;i<w*h*.08;i++){x.fillStyle=`rgba(255,240,200,${Math.random()*.025})`;x.fillRect(Math.random()*w,Math.random()*h,1,1);}
+  for(let s=0;s<2;s++){const gx=Math.random()*w,gy=Math.random()*h,g=x.createRadialGradient(gx,gy,0,gx,gy,14+Math.random()*10);g.addColorStop(0,'rgba(48,4,4,0.28)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,w,h);}
+  return o;
+}
+const WALL_T=mkWall(TILE*4,TILE);
+const FLOOR_T=mkFloor(TILE*4,TILE);
+function tv(tx,ty){return(tx*7+ty*13)%4;}
+
+// ── LEVELS (30×20 tiles each) ─────────────────────────────────────────
+const LEVELS=[
+{
+  name:'LEVEL 0 — ALDRIC BUILDING EXTERIOR',
+  subtitle:'"Still raining. I am going in."',
+  prelude:true,noFigure:true,
+  map:[
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  ],
+  tapeData:[{clues:[],isKey:true}],
+  word:'',encodedWord:'',
+  pStart:[1.5,1.5],fStart:[13.5,17.5],
+  exit:{x:13.5,y:17.5},
+  envChanges:[],
+  msgs:['▶ KEY FOUND — Security key recovered from guardhouse. Aldric Building master access. Nov 5, 1994 — 3:08 AM.'],
+},
+{
+  name:'LEVEL 1 — ARCHIVE FLOOR',
+  subtitle:'"The lock was broken from the inside."',
+  map:[
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1],
+    [1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1],
+    [1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1],
+    [1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  ],
+  tapeData:[{clues:['B=R']},{clues:['Q=O']},{clues:['N=M']}],
+  word:'ROOM',encodedWord:'BQQN',
+  pStart:[1.5,1.5],fStart:[22.5,12.5],
+  exit:{x:7.5,y:18.5},
+  envChanges:[{x:4.5,y:2.5},{x:23.5,y:4.5}],
+  safeRoom:{x1:23,y1:1,x2:28,y2:2},
+  msgs:[
+    '▶ TAPE 001 — "Day 1. Entrance sealed from inside. Lock broken inward. Something in here did not want to leave."',
+    '▶ TAPE 002 — "Day 2. Found the filing room. Most records redacted. One file: PROJECT VEIL. They contained something — a frequency."',
+    '▶ TAPE 003 — "Day 3. Found a recording. The voice is mine. I have not made any recordings. It speaks about the rooms."',
+  ],
+  doc:{tx:5,ty:4,title:'INTERNAL MEMO — ARCHIVE DIV.',lines:['Jan 14, 1987.','All employees on Floor 3 have been instructed','to avoid Sub-corridor 7B until further notice.','Reason: unspecified auditory anomaly.','Reported by: 9 separate workers.','Acknowledged by management: NO.']},
+  creakTiles:[{x:5,y:4},{x:15,y:4},{x:11,y:11}],
+  scriptedEvents:[{tx:8,ty:3,type:'doorSlam'},{tx:13,ty:6,type:'flicker'},{tx:5,ty:11,type:'shapeFlash'}],
+  lockedRoom:{keyX:12,keyY:1,doorX:5,doorY:8,roomTiles:[{x:6,y:7},{x:7,y:7},{x:8,y:7},{x:6,y:8},{x:7,y:8},{x:8,y:8},{x:6,y:9},{x:7,y:9},{x:8,y:9}],docTitle:'SEALED NOTE — ROOM 7B',docLines:['Researcher log. Undated.','The subject in Room 7B has been here for 14 days.','It no longer responds to light stimulus.','It responds to us entering. Before we open the door.','Director refuses to authorize termination.','I am filing this note in the wall. In case I do not come back.']},
+},
+{
+  name:'LEVEL 2 — SUBLEVEL B1  [RESTRICTED]',
+  subtitle:'"This recording predates your investigation."',
+  map:[
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1],
+    [1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1],
+    [1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  ],
+  tapeData:[{clues:['H=B'],special:true},{clues:['V=L']},{clues:['Z=O']},{clues:['F=D']}],
+  word:'BLOOD',encodedWord:'HVZZF',
+  pStart:[1.5,12.5],fStart:[26.5,2.5],
+  exit:{x:26.5,y:1.5},
+  envChanges:[{x:5.5,y:4.5},{x:22.5,y:16.5}],
+  safeRoom:{x1:1,y1:1,x2:5,y2:5},
+  msgs:[
+    '▶ TAPE 003 — CORRUPTED — TIMESTAMP: 1991-03-22 — This recording predates your investigation by 3 years. The voice on the tape is yours.',
+    '▶ TAPE 004 — "PROJECT VEIL was containment. They caught it in 1985. It does not die. It LEARNS. It absorbs identity from proximity."',
+    '▶ TAPE 005 — "The containment failed March 1987. 47 workers. None made it to the surface. The frequency became them."',
+    '▶ TAPE 006 — "It mimics human posture to move. It is not what you think you see. Do not look at it directly."',
+  ],
+  doc:{tx:14,ty:3,title:'FIELD NOTE — DR. VALE',lines:['The signal does not repeat. It responds.','We changed the frequency on day 4.','It changed back before we could log it.','Kellner refuses to enter the room anymore.','I understand why.','We should have stopped in September.']},
+  creakTiles:[{x:6,y:3},{x:20,y:14},{x:4,y:11}],
+  scriptedEvents:[{tx:14,ty:3,type:'doorSlam'},{tx:5,ty:12,type:'shapeFlash'},{tx:22,ty:4,type:'flicker'}],
+  lockedRoom:{keyX:6,keyY:4,doorX:5,doorY:8,roomTiles:[{x:6,y:7},{x:7,y:7},{x:8,y:7},{x:6,y:8},{x:7,y:8},{x:8,y:8}],docTitle:'PERSONAL LOG — SUBLEVEL B1',docLines:['Dr. Vale. Nov 1, 1987.','The frequency is changing us.','Kellner started humming it in his sleep.','None of us can remember what it sounded like before.','I tried to leave today. My feet brought me back.','I think it wants us here.']},
+},
+{
+  name:'LEVEL 3 — SUBLEVEL B3  [CONTAINMENT]',
+  subtitle:'"You were never meant to leave this building."',
+  map:[
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1],
+    [1,1,0,0,1,1,1,1,1,0,0,1,1,1,1,1,0,0,1,1,1,1,1,0,0,1,1,1,1,1],
+    [1,1,0,0,1,1,1,1,1,0,0,1,1,1,1,1,0,0,1,1,1,1,1,0,0,1,1,1,1,1],
+    [1,1,0,0,1,1,1,1,1,0,0,1,1,1,1,1,0,0,1,1,1,1,1,0,0,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1],
+    [1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  ],
+  tapeData:[{clues:['X=E']},{clues:['K=S']},{clues:['J=C']},{clues:['B=A']},{clues:['Y=P']}],
+  word:'ESCAPE',encodedWord:'XKJBYX',
+  pStart:[1.5,1.5],fStart:[25.5,15.5],
+  exit:{x:25.5,y:18.5},
+  envChanges:[{x:3.5,y:2.5},{x:24.5,y:14.5}],
+  safeRoom:{x1:22,y1:14,x2:27,y2:17},
+  msgs:[
+    '▶ TAPE 007 — "Sublevel B3. Containment zone. The frequency is loudest here. They brought it here to study it. They never left."',
+    '▶ TAPE 008 — "The 47 workers. I found their names. They all have the same personnel file. Same photo. Different names."',
+    '▶ TAPE 009 [CORRUPTED] — "You — Detective — this is a message from yourself. Three months from now. Do not look at it. Do not—"',
+    '▶ TAPE 010 — "The researchers left a cipher. The exit is locked by frequency-code. It was designed so ONLY the signal could decode it."',
+    '▶ TAPE 011 [FINAL] — "You were never meant to leave. But the researchers left one way out. Find the cipher. Trust the clues. Run."',
+  ],
+  doc:{tx:3,ty:12,title:'INCIDENT LOG — SUBLEVEL B3',lines:['Nov 2 — Worker 41 unaccounted for. Search ongoing.','Nov 3 — Workers 42-44. Doors found open from inside.','Nov 4 — Transmitter signal strength: 400% baseline.','Nov 5 — All personnel evacuated per Dept. order.','Nov 5 — Building sealed.','Nov 5 — 47 unaccounted for. File sealed.']},
+  creakTiles:[{x:10,y:3},{x:3,y:10},{x:22,y:15}],
+  scriptedEvents:[{tx:14,ty:3,type:'flicker'},{tx:3,ty:13,type:'shapeFlash'},{tx:22,ty:9,type:'doorSlam'}],
+  lockedRoom:{keyX:10,keyY:1,doorX:4,doorY:7,roomTiles:[{x:5,y:6},{x:6,y:6},{x:7,y:6},{x:5,y:7},{x:6,y:7},{x:7,y:7},{x:5,y:8},{x:6,y:8},{x:7,y:8}],docTitle:'EMERGENCY MEMO — B3',docLines:['EYES ONLY. Nov 5, 1987 — 2:44 AM.','Containment breach confirmed. All 47 subjects: status unknown.','Building sealed by Dept. order 0312.','This file has been classified retroactively.','If you are reading this inside the building —','you were never meant to leave either.']},
+},
+{
+  name:'LEVEL 4 — SUBLEVEL C2',
+  subtitle:'"It cannot see you. But it hears everything."',
+  useListener:true,
+  map:[
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,0,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,0,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,1,1,1,1,1,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,1,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,1,1,1,1,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  ],
+  tapeData:[{clues:['K=S']},{clues:['X=I']},{clues:['O=G']},{clues:['Q=N']},{clues:['B=A']},{clues:['A=L']}],
+  word:'SIGNAL',encodedWord:'KXOQBA',
+  pStart:[1.5,1.5],lStart:[15.5,10.5],fStart:[28.5,18.5],
+  exit:{x:27.5,y:17.5},
+  envChanges:[{x:8.5,y:6.5},{x:20.5,y:6.5}],
+  msgs:[
+    '▶ TAPE C2-01 — "We thought the frequency tests were safe. We were wrong."',
+    '▶ TAPE C2-02 — "Subject responded to audio stimuli at 40Hz. Pupils dilated."',
+    '▶ TAPE C2-03 — "Do not make noise near the lower corridor. It found Dr. Neel."',
+    '▶ TAPE C2-04 — "The sound triggers it. It cannot see. It only listens."',
+    '▶ TAPE C2-05 — "Earplugs found ineffective. It detects vibration too."',
+    '▶ TAPE C2-06 — "Move slow. Stay quiet. You have a chance. —Vale"',
+  ],
+  doc:{tx:8,ty:2,title:'DEPT. MEMO — SUBLEVEL C2',lines:['SUBJECT DESIGNATION: The Listener','Blind. Responds exclusively to acoustic stimuli.','Threat level: CRITICAL.','Do not run. Do not sprint.','It hears heartbeats at close range.','Silence is your only protection.']},
+  safeRoom:{x1:25,y1:1,x2:28,y2:3},
+  creakTiles:[{x:8,y:6},{x:20,y:9},{x:13,y:14}],
+  scriptedEvents:[{tx:15,ty:5,type:'doorSlam'},{tx:5,ty:12,type:'flicker'},{tx:20,ty:6,type:'shapeFlash'}],
+  lockedRoom:{keyX:3,keyY:2,doorX:6,doorY:8,roomTiles:[{x:7,y:8},{x:8,y:8},{x:9,y:8},{x:10,y:8}],docTitle:'SUBLEVEL C2 — RESEARCH LOG',docLines:['Week 3, day 2.','The Listener does not sleep.','We have tried 11 different acoustic frequencies.','It locates sound sources faster each time.','It is not just detecting. It is learning.','We have lost Dr. Neel. Found his recording. Not playing it.']},
+},
+{
+  name:'LEVEL 5 — THE CONTAINMENT CORE',
+  subtitle:'"Subject 47. They never left."',
+  useListener:true,
+  map:[
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
+    [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,1],
+    [1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  ],
+  tapeData:[{clues:['Z=S']},{clues:['P=U']},{clues:['Y=B']},{clues:['Q=J']},{clues:['R=E']},{clues:['J=C']},{clues:['W=T']}],
+  word:'SUBJECT',encodedWord:'ZPYQRJW',
+  pStart:[1.5,1.5],lStart:[15.5,15.5],fStart:[28.5,18.5],
+  exit:{x:27.5,y:17.5},
+  envChanges:[{x:5.5,y:5.5},{x:20.5,y:5.5}],
+  msgs:[
+    '▶ TAPE CORE-01 — "This is the last floor. Whatever is down here — do not wake it."',
+    '▶ TAPE CORE-02 — "It has been in this room for seven years. It is still waiting."',
+    '▶ TAPE CORE-03 — "Subject 47 was the last. The frequency changed them. All of them."',
+    '▶ TAPE CORE-04 — "Footsteps. Breathing. It hears all of it. Move like a ghost."',
+    '▶ TAPE CORE-05 — "The exit is to the east. Do not sprint. Do not panic. —Harris"',
+    '▶ TAPE CORE-06 — "If you find this — I made it out. I think. —S.H."',
+    '▶ TAPE CORE-07 — "The signal. It was never a transmitter. It was them."',
+  ],
+  doc:{tx:3,ty:16,title:'INCIDENT LOG — CONTAINMENT CORE',lines:['All 47 subjects confirmed contained — Level 5.','Acoustic sensitivity: extreme. Movement triggers response.','Recommended protocol: silence, slow movement.','Evacuation order: Nov 5, 1987 — too late.','This floor was never meant to be opened again.','If you are reading this — run. Slowly.']},
+  safeRoom:{x1:25,y1:1,x2:28,y2:3},
+  creakTiles:[{x:6,y:5},{x:14,y:8},{x:22,y:13}],
+  scriptedEvents:[{tx:9,ty:9,type:'shapeFlash'},{tx:17,ty:13,type:'doorSlam'},{tx:5,ty:5,type:'flicker'}],
+  lockedRoom:{keyX:3,keyY:2,doorX:3,doorY:4,roomTiles:[{x:4,y:4},{x:5,y:4}],docTitle:'CORE LOG — FINAL ENTRY',docLines:['Subject 47. Experiment 7. Day unknown.','The signal is no longer external.','We confirmed it yesterday. It is inside the subjects.','They are broadcasting it.','There is no transmitter. There never was.','The building did not contain the signal. The signal contained the building.']},
+},
+];
+
+
+// ── AUDIO ─────────────────────────────────────────────────────────────
+const A=new(window.AudioContext||window.webkitAudioContext)();
+const mg=A.createGain();mg.gain.value=0.72;mg.connect(A.destination);
+function tone(f,d,t='sine',v=.1){try{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,A.currentTime);g.gain.exponentialRampToValueAtTime(.0001,A.currentTime+d);o.start();o.stop(A.currentTime+d);}catch(e){}}
+function sfxStep(){tone(60+Math.random()*18,.07,'sawtooth',.028);}
+function sfxHeart(v=.18){tone(50,.12,'sine',v);setTimeout(()=>tone(46,.18,'sine',v*.7),140);}
+function sfxTape(){tone(880,.15,'sine',.1);setTimeout(()=>tone(1320,.18,'sine',.07),90);}
+function sfxWin(){
+  // CASE FILE CLOSED — haunting, bittersweet resolution
+  // A slow descending minor melody: feels like relief but not safety
+  try{
+    const now=A.currentTime;
+    // Sparse piano-like notes descending (Am - G - F - E)
+    [[440,.10],[392,.08],[349,.07],[330,.09],[294,.06],[330,.05]].forEach(([f,v],i)=>{
+      const t=now+i*1.1;
+      const o=A.createOscillator(),g=A.createGain();
+      o.connect(g);g.connect(mg);o.type='sine';o.frequency.value=f;
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.06);
+      g.gain.exponentialRampToValueAtTime(.0001,t+2.2);
+      o.start(t);o.stop(t+2.4);
+    });
+    // Soft sustained pad underneath
+    [[110,.022],[165,.014],[220,.010]].forEach(([f,v],i)=>{
+      const t=now+.4;
+      const o=A.createOscillator(),g=A.createGain();
+      o.connect(g);g.connect(mg);o.type='triangle';o.frequency.value=f;
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+1.5);
+      g.gain.linearRampToValueAtTime(0,t+7);
+      o.start(t);o.stop(t+7.5);
+    });
+    // A final lonely high note that lingers
+    setTimeout(()=>{try{
+      const t2=A.currentTime;
+      const o=A.createOscillator(),g=A.createGain();
+      o.connect(g);g.connect(mg);o.type='sine';o.frequency.value=523;
+      g.gain.setValueAtTime(0,t2);g.gain.linearRampToValueAtTime(.055,t2+.5);
+      g.gain.linearRampToValueAtTime(0,t2+4.5);
+      o.start(t2);o.stop(t2+5);
+    }catch(e){}},4000);
+  }catch(e){}
+}
+function sfxDeadMusic(){
+  // LOST — oppressive, collapsing, no resolution
+  try{
+    const now=A.currentTime;
+    // Heavy descending low tones — dropping into nothing
+    [[82,.06],[73,.05],[65,.04],[55,.05],[41,.06]].forEach(([f,v],i)=>{
+      const t=now+i*.7;
+      const o=A.createOscillator(),g=A.createGain();
+      o.connect(g);g.connect(mg);o.type='sawtooth';o.frequency.value=f;
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.2);
+      g.gain.linearRampToValueAtTime(v*.5,t+.8);g.gain.linearRampToValueAtTime(0,t+1.4);
+      o.start(t);o.stop(t+1.6);
+    });
+    // Dissonant high cluster — distress
+    [[880,.018],[932,.015],[987,.012]].forEach(([f,v],i)=>{
+      const t=now+.3+i*.12;
+      const o=A.createOscillator(),g=A.createGain();
+      o.connect(g);g.connect(mg);o.type='triangle';o.frequency.value=f;
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.08);
+      g.gain.exponentialRampToValueAtTime(.0001,t+2.5);
+      o.start(t);o.stop(t+2.7);
+    });
+    // Long subsonic hum that just sits there
+    setTimeout(()=>{try{
+      const t2=A.currentTime;
+      const o=A.createOscillator(),g=A.createGain();
+      o.connect(g);g.connect(mg);o.type='sine';o.frequency.value=28;
+      g.gain.setValueAtTime(0,t2);g.gain.linearRampToValueAtTime(.032,t2+1.5);
+      g.gain.linearRampToValueAtTime(0,t2+6);
+      o.start(t2);o.stop(t2+6.5);
+    }catch(e){}},2200);
+  }catch(e){}
+}
+function sfxStatic(v=.07,d=.35){try{const buf=A.createBuffer(1,A.sampleRate*d,A.sampleRate),data=buf.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*.8;const s=A.createBufferSource(),g=A.createGain();s.buffer=buf;s.connect(g);g.connect(mg);g.gain.value=v;s.start();}catch(e){}}
+// Phantom breathing — no source entity
+function sfxBreathing(){try{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sine';o.frequency.setValueAtTime(95,A.currentTime);o.frequency.linearRampToValueAtTime(128,A.currentTime+1.8);o.frequency.linearRampToValueAtTime(95,A.currentTime+3.4);g.gain.setValueAtTime(.0001,A.currentTime);g.gain.linearRampToValueAtTime(.05,A.currentTime+.7);g.gain.linearRampToValueAtTime(.05,A.currentTime+2.7);g.gain.linearRampToValueAtTime(.0001,A.currentTime+3.4);o.start();o.stop(A.currentTime+3.5);}catch(e){}}
+// Phantom footstep — no entity made it
+function sfxPhantomStep(){tone(55+Math.random()*15,.09,'sawtooth',.024);}
+// Whisper — barely audible speech-like sound
+function sfxWhisper(){try{[0,.26,.48,.76,1.02].forEach(t=>{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sawtooth';o.frequency.setValueAtTime(138+Math.random()*55,A.currentTime+t);o.frequency.linearRampToValueAtTime(175+Math.random()*70,A.currentTime+t+.2);g.gain.setValueAtTime(.0001,A.currentTime+t);g.gain.linearRampToValueAtTime(.024,A.currentTime+t+.05);g.gain.exponentialRampToValueAtTime(.0001,A.currentTime+t+.25);o.start(A.currentTime+t);o.stop(A.currentTime+t+.28);});}catch(e){}}
+// Distant door slam — makes you think someone else is in the building
+function sfxSlam(){try{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sawtooth';o.frequency.setValueAtTime(90,A.currentTime);o.frequency.exponentialRampToValueAtTime(18,A.currentTime+.45);g.gain.setValueAtTime(.18,A.currentTime);g.gain.exponentialRampToValueAtTime(.0001,A.currentTime+.5);o.start();o.stop(A.currentTime+.5);sfxStatic(.015,.08);}catch(e){}}
+// Voice-like sound for the "tape with your voice" — speech cadence, not words
+function sfxVoiceTape(){
+  sfxStatic(.055,.5);
+  setTimeout(()=>{try{const fr_=[.09,.28,.52,.78,1.0,1.3,1.52,1.82,2.1,2.35];fr_.forEach((t,i)=>{if(i%3===2)return;const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sawtooth';const f=115+Math.random()*55;o.frequency.setValueAtTime(f,A.currentTime+t);o.frequency.linearRampToValueAtTime(f*(1+(Math.random()-.5)*.22),A.currentTime+t+.18);g.gain.setValueAtTime(.0001,A.currentTime+t);g.gain.linearRampToValueAtTime(.036,A.currentTime+t+.04);g.gain.exponentialRampToValueAtTime(.0001,A.currentTime+t+.22);o.start(A.currentTime+t);o.stop(A.currentTime+t+.24);});}catch(e){}},550);
+}
+// Sub-bass infrasound — felt more than heard, pure dread
+function sfxInfrasound(){try{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sine';o.frequency.setValueAtTime(14+Math.random()*8,A.currentTime);g.gain.setValueAtTime(.0001,A.currentTime);g.gain.linearRampToValueAtTime(.16,A.currentTime+1.8);g.gain.linearRampToValueAtTime(.0001,A.currentTime+4.2);o.start();o.stop(A.currentTime+4.5);}catch(e){}}
+// Teleport pop when figure moves
+function sfxTeleport(){tone(200,.1,'sawtooth',.035);sfxStatic(.025,.12);}
+function sfxFigureScream(){try{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sawtooth';o.frequency.setValueAtTime(680,A.currentTime);o.frequency.exponentialRampToValueAtTime(240,A.currentTime+.7);o.frequency.linearRampToValueAtTime(180,A.currentTime+1.6);g.gain.setValueAtTime(0,A.currentTime);g.gain.linearRampToValueAtTime(.16,A.currentTime+.05);g.gain.linearRampToValueAtTime(.12,A.currentTime+.6);g.gain.exponentialRampToValueAtTime(.0001,A.currentTime+1.8);o.start();o.stop(A.currentTime+1.9);sfxStatic(.05,.5);}catch(e){}}
+function sfxFigureStep(){try{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sawtooth';o.frequency.setValueAtTime(110,A.currentTime);o.frequency.exponentialRampToValueAtTime(28,A.currentTime+.3);g.gain.setValueAtTime(.09,A.currentTime);g.gain.exponentialRampToValueAtTime(.0001,A.currentTime+.35);o.start();o.stop(A.currentTime+.38);}catch(e){}}
+function startBGMusic(){
+  if(bgMusicStarted)return;bgMusicStarted=true;
+  const playDrone=()=>{
+    if(gs==='title'||gs==='intro')return;
+    if(lvlN===0)return;
+    try{
+      const now=A.currentTime;
+      const gl=gL();
+      // L1 — Archive: low amber rumble, slow and heavy
+      // L2 — Sublevel B1: colder, dissonant, higher intervals
+      // L3 — Sublevel B3: intense sub-bass with sawtooth grit
+      const sets=[
+        [[28,.014],[56,.007],[84,.004],[42,.006]],
+        [[24,.016],[62,.009],[93,.005],[31,.008],[148,.003]],
+        [[20,.020],[40,.013],[60,.007],[80,.005],[100,.004]],
+      ];
+      (sets[gl]||sets[0]).forEach(([f,v],i)=>{
+        const o=A.createOscillator(),g=A.createGain();
+        o.connect(g);g.connect(mg);
+        o.type=gl===2?'sawtooth':i%2===0?'sine':'triangle';
+        o.frequency.value=f+(Math.random()-.5)*(gl===2?5:1.5);
+        const dur=gl===2?14:gl===1?18:24;
+        g.gain.setValueAtTime(0,now);g.gain.linearRampToValueAtTime(v,now+3);
+        g.gain.linearRampToValueAtTime(v*.8,now+dur-3);g.gain.linearRampToValueAtTime(0,now+dur);
+        o.start(now);o.stop(now+dur+1);
+      });
+    }catch(e){}
+    const gap=gL()===2?9000:gL()===1?14000:20000;
+    setTimeout(playDrone,gap+Math.random()*5000);
+  };
+  playDrone();
+}
+function sfxThunder(){try{
+  const len=Math.floor(A.sampleRate*2.8),buf=A.createBuffer(1,len,A.sampleRate),d=buf.getChannelData(0);
+  for(let i=0;i<len;i++){const t=i/A.sampleRate;const env=t<.05?t/.05:Math.exp(-(t-.05)*1.6);d[i]=(Math.random()*2-1)*env*.92;}
+  const s=A.createBufferSource(),g=A.createGain(),lp=A.createBiquadFilter();
+  lp.type='lowpass';lp.frequency.value=180;s.buffer=buf;s.connect(lp);lp.connect(g);g.connect(mg);g.gain.value=.6;s.start();lightningFlash=4;
+}catch(e){}}
+let thunderTimer=Math.floor((20+Math.random()*30)*60);let lightningFlash=0;let tapeBeepTimer=0;let staminaExhausted=false;
+let noiseLevel=0;let lastNoisePos={x:0,y:0};
+const LIS={x:0,y:0,radius:18,state:'patrol',patrolTarget:{x:0,y:0},opacity:0,stepT:0};
+let lisScreamed=false;
+function updThunder(){if(lvlN!==0)return;if(--thunderTimer<=0){sfxThunder();thunderTimer=Math.floor((18+Math.random()*40)*60);}}
+function updNoise(){
+  if(!LEVELS[lvlN]||!LEVELS[lvlN].useListener)return;
+  const moving=Math.abs(P.vx)>.05||Math.abs(P.vy)>.05;
+  if(P.sprinting)noiseLevel=Math.min(100,noiseLevel+5);
+  else if(moving)noiseLevel=Math.min(100,noiseLevel+1.2);
+  else noiseLevel=Math.max(0,noiseLevel-2.5);
+}
+function updListener(){
+  if(!LEVELS[lvlN]||!LEVELS[lvlN].useListener)return;
+  const dist=Math.hypot(P.x-LIS.x,P.y-LIS.y);
+  // Difficulty-scaled hearing: hard hears at lower noise, easy needs louder noise
+  const hearThresh=difficulty==='hard'?12:difficulty==='easy'?48:28;
+  const hearMult=difficulty==='hard'?1.55:difficulty==='easy'?.70:.95;
+  const hearRange=TILE*(2+noiseLevel/10)*hearMult;
+  // Update last heard position when noise is above threshold and in range
+  if(noiseLevel>hearThresh&&dist<hearRange){
+    lastNoisePos={x:P.x,y:P.y};
+    LIS.state='alerted';
+  }
+  // Fade back to patrol — harder on hard mode (needs lower noise to calm down)
+  const calmThresh=difficulty==='hard'?6:difficulty==='easy'?22:12;
+  if(noiseLevel<calmThresh&&LIS.state==='alerted'&&Math.hypot(LIS.x-lastNoisePos.x,LIS.y-lastNoisePos.y)<TILE*1.5){
+    LIS.state='patrol';
+  }
+  // Speed based on state, level, and difficulty
+  const isLvl5=lvlN===5;
+  const spdMult=(difficulty==='hard'?1.65:difficulty==='easy'?.70:.95)*safeRoomPenalty;
+  const spd=LIS.state==='alerted'?(isLvl5?4.2:3.4)*spdMult:(isLvl5?1.4:1.0)*spdMult;
+  if(LIS.state==='alerted'){
+    LIS.opacity=Math.min(0.88,LIS.opacity+.025);
+    const tx=lastNoisePos.x,ty=lastNoisePos.y;
+    const d2=Math.hypot(LIS.x-tx,LIS.y-ty);
+    if(d2>4){const nx=(tx-LIS.x)/d2,ny=(ty-LIS.y)/d2;LIS.x+=nx*spd;LIS.y+=ny*spd;resolve(LIS);}
+    // Scream when first alerted
+    if(!lisScreamed){lisScreamed=true;try{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sawtooth';o.frequency.setValueAtTime(320,A.currentTime);o.frequency.exponentialRampToValueAtTime(80,A.currentTime+.6);g.gain.setValueAtTime(.12,A.currentTime);g.gain.exponentialRampToValueAtTime(.0001,A.currentTime+.7);o.start();o.stop(A.currentTime+.75);}catch(e){}}
+    if(LIS.stepT--<=0){LIS.stepT=12;try{tone(80+Math.random()*20,.09,'sawtooth',.032);}catch(e){}}
+  } else {
+    lisScreamed=false;
+    LIS.opacity=Math.max(0.05,LIS.opacity-.015);
+    // Patrol: wander toward a random floor tile
+    const pd=Math.hypot(LIS.x-LIS.patrolTarget.x,LIS.y-LIS.patrolTarget.y);
+    if(pd<TILE){
+      // Pick new patrol target
+      let px,py,tries=0;
+      do{px=(1+Math.floor(Math.random()*(MCOLS-2))+.5)*TILE;py=(1+Math.floor(Math.random()*(MROWS-2))+.5)*TILE;tries++;}
+      while(MAP[Math.floor(py/TILE)]&&MAP[Math.floor(py/TILE)][Math.floor(px/TILE)]!==0&&tries<40);
+      LIS.patrolTarget={x:px,y:py};
+    }
+    const nx2=(LIS.patrolTarget.x-LIS.x)/Math.max(1,pd),ny2=(LIS.patrolTarget.y-LIS.y)/Math.max(1,pd);
+    LIS.x+=nx2*spd;LIS.y+=ny2*spd;resolve(LIS);
+  }
+  // Contact = death
+  if(dist<LIS.radius+P.radius+4){
+    P.health=0;shk=22;blood(P.x,P.y);
+    sfxStatic(.07,.3);glitch=80;
+    gs='dead';deadFr=fr;setTimeout(sfxDeadMusic,600);
+  }
+  // Proximity sanity drain
+  if(dist<TILE*4){const f=1-dist/(TILE*4);P.sanity=Math.max(0,P.sanity-.05*f*(LIS.state==='alerted'?3:1));}
+}
+function playIntroMusic(){try{
+  const now=A.currentTime;
+  [[55,.020],[82,.010],[110,.007]].forEach(([f,v])=>{
+    const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sine';
+    o.frequency.value=f;g.gain.setValueAtTime(0,now);g.gain.linearRampToValueAtTime(v,now+2.5);
+    g.gain.linearRampToValueAtTime(0,now+9);o.start(now);o.stop(now+9.5);
+  });
+}catch(e){}}
+function startTitleMusic(){
+  if(titleMusicStarted)return;titleMusicStarted=true;
+  const play=()=>{
+    if(gs!=='title'){titleMusicStarted=false;return;}
+    try{
+      const now=A.currentTime;
+      // Deep infrasonic drone layers
+      [[16,.026],[32,.014],[48,.009],[22,.012]].forEach(([f,v],i)=>{
+        const o=A.createOscillator(),g=A.createGain();
+        o.connect(g);g.connect(mg);o.type=i===3?'triangle':'sine';
+        o.frequency.value=f+(Math.random()-.5)*.7;
+        g.gain.setValueAtTime(0,now);g.gain.linearRampToValueAtTime(v,now+4);
+        g.gain.linearRampToValueAtTime(v*.75,now+20);g.gain.linearRampToValueAtTime(0,now+26);
+        o.start(now);o.stop(now+27);
+      });
+      // Occasional eerie high glimmer
+      if(Math.random()<.55){
+        const t=now+5+Math.random()*12;
+        const o=A.createOscillator(),g=A.createGain();
+        o.connect(g);g.connect(mg);o.type='triangle';
+        o.frequency.value=185+Math.random()*160;
+        g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.0055,t+2);
+        g.gain.linearRampToValueAtTime(0,t+9);o.start(t);o.stop(t+10);
+      }
+    }catch(e){}
+    setTimeout(play,22000+Math.random()*8000);
+  };
+  play();
+}
+function startNoirMusic(){
+  if(noirMusicStarted)return;noirMusicStarted=true;
+  const playNoir=()=>{
+    if(lvlN!==0){noirMusicStarted=false;return;}
+    try{
+      const now=A.currentTime;
+      // Descending minor bass line — rain-soaked detective feel
+      [[110,.045],[98,.032],[87,.028],[82,.022],[73,.025],[82,.018]].forEach(([f,v],i)=>{
+        const t=now+i*1.8;
+        const o=A.createOscillator(),g=A.createGain();
+        o.connect(g);g.connect(mg);o.type='triangle';
+        o.frequency.value=f;
+        g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.12);
+        g.gain.linearRampToValueAtTime(v*.6,t+1.5);g.gain.linearRampToValueAtTime(0,t+1.9);
+        o.start(t);o.stop(t+2);
+      });
+      // Add a soft high-hat like texture
+      const noiseTime=now+.5;
+      try{const buf=A.createBuffer(1,A.sampleRate*.08,A.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*.6;const s=A.createBufferSource(),g2=A.createGain();s.buffer=buf;const f2=A.createBiquadFilter();f2.type='highpass';f2.frequency.value=4000;s.connect(f2);f2.connect(g2);g2.connect(mg);g2.gain.value=.012;s.start(noiseTime);}catch(e){}
+    }catch(e){}
+    setTimeout(playNoir,11000+Math.random()*3000);
+  };
+  playNoir();
+}
+let ambT=0;
+function tickAmb(){if(gs!=='playing')return;if(Math.random()<.28)tone(155+Math.random()*210,.4,'sine',.01+Math.random()*.008);if(Math.random()<.06)tone(78+Math.random()*45,.85,'sawtooth',.006);
+  // Level-specific ambient sounds
+  if(gs==='playing'&&!paused){
+    if(lvlN===1&&Math.random()<.35){
+      // Dripping water — Archive Floor
+      try{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sine';o.frequency.setValueAtTime(900,A.currentTime);o.frequency.exponentialRampToValueAtTime(280,A.currentTime+.18);g.gain.setValueAtTime(.028,A.currentTime);g.gain.exponentialRampToValueAtTime(.0001,A.currentTime+.22);o.start();o.stop(A.currentTime+.25);}catch(e){}
+    } else if(lvlN===2&&Math.random()<.4){
+      // Electrical buzz — Sublevel B1
+      try{const buf=A.createBuffer(1,Math.floor(A.sampleRate*.08),A.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*.7;const s=A.createBufferSource(),g=A.createGain(),bp=A.createBiquadFilter();bp.type='bandpass';bp.frequency.value=120;bp.Q.value=8;s.buffer=buf;s.connect(bp);bp.connect(g);g.connect(mg);g.gain.value=.035;s.start();}catch(e){}
+    } else if(lvlN===3&&Math.random()<.45){
+      // Deep mechanical pulse — Sublevel B3
+      try{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sawtooth';o.frequency.value=38;g.gain.setValueAtTime(0,A.currentTime);g.gain.linearRampToValueAtTime(.032,A.currentTime+.04);g.gain.linearRampToValueAtTime(0,A.currentTime+.18);o.start();o.stop(A.currentTime+.2);}catch(e){}
+    }
+  }
+}
+
+// ── INPUT ─────────────────────────────────────────────────────────────
+const K={};let mX=W/2,mY=H/2;
+document.addEventListener('keydown',e=>{
+  if(evidenceActive){
+    if(e.key==='Enter'||e.code==='Enter'){evidenceActive=false;evidenceTimer=0;}
+    e.preventDefault?.();return;
+  }
+  if(exitPuzzleActive&&exitPuzzleResult===null){
+    const k=e.key.toUpperCase();
+    if(k.length===1&&k>='A'&&k<='Z'&&exitPuzzleInput.length<LEVELS[lvlN].word.length){
+      exitPuzzleInput+=k;
+      if(exitPuzzleInput.length===LEVELS[lvlN].word.length)submitExitPuzzle();
+    } else if(e.key==='Backspace'){exitPuzzleInput=exitPuzzleInput.slice(0,-1);}
+    e.preventDefault?.();return;
+  }
+  K[e.key.toLowerCase()]=true;
+  if(e.key===' '||e.code==='Space')onAct();
+  if(e.key.toLowerCase()==='f')toggleFlash();
+  if(e.key.toLowerCase()==='r'&&gs==='playing'&&!paused){rechargeFlash();return;}
+  if(e.key==='s'||e.key==='S'){if(gs==='title'){gs='settings';settingsInsultShown=false;}return;}
+  if(e.key==='n'||e.key==='N'){notesOpen=!notesOpen;return;}
+  if(gs==='settings'){
+    if(e.key==='Escape'){gs='title';return;}
+    if(e.key==='1'){difficulty='easy';settingsInsultShown=true;return;}
+    if(e.key==='2'){difficulty='normal';settingsInsultShown=false;return;}
+    if(e.key==='3'){difficulty='hard';settingsInsultShown=false;return;}
+  }
+  if(e.key==='Escape'&&notesOpen){notesOpen=false;return;}
+  if((e.key==='p'||e.key==='P'||e.key==='Escape')&&(gs==='playing'||paused)){paused=!paused;}
+  e.preventDefault?.();
+},{passive:false});
+document.addEventListener('keyup',e=>{K[e.key.toLowerCase()]=false;});
+c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();mX=e.clientX-r.left;mY=e.clientY-r.top;});
+c.addEventListener('click',()=>{
+  A.resume();
+  if(gs==='settings'){
+    const opts=['easy','normal','hard'];
+    opts.forEach((d,i)=>{
+      const bx=W/2-180+i*120,by=H*.42-14,bw=100,bh=28;
+      if(mX>=bx&&mX<=bx+bw&&mY>=by&&mY<=by+bh){
+        difficulty=d;
+        settingsInsultShown=(d==='easy');
+      }
+    });
+    return;
+  }
+  onAct();
+});
+
+// ── STATE ─────────────────────────────────────────────────────────────
+let gs='intro',fr=0,lvlN=0;
+let introSlide=0;
+let deadFr=0,winFr=0,transFr=0;let creditsActive=false;
+let glitch=0,trackGlitch=0;
+let msg='',msgFr=0;
+let shk=0,skx=0,sky=0;
+let ghostTimer=400,ghostX=0,ghostY=0,ghostFr=0;
+let phantomTimer=200;
+let rainDrops=[];
+let visitedZones=new Set(),envMarkers=[];
+let camX=0,camY=0;
+let collectedClues=[];
+let clueMap={};
+let bgMusicStarted=false;let paused=false;let difficulty='normal';let gs_prev='title';let settingsInsultShown=false;
+let collectedDocs=[];let notesOpen=false;
+let noirMusicStarted=false;let titleMusicStarted=false;
+let evidenceActive=false,evidenceTimer=0,evidenceClues=[],evidenceMsg='';
+let exitPuzzleActive=false,exitPuzzleInput='',exitPuzzleTimer=0,exitPuzzleResult=null,exitPuzzleResultTimer=0,exitWrongFlash=0,exitLocked=false;
+let batteryPickups=[];let battWarnFlash=0;
+let keycardFound=false;let lockedRoomOpen=false;let lockedRoomDoc=null;let keycardItem=null;let scriptedDone=new Set();let creakCooldown=0;let visitedTileMap=new Map();let figLearnTarget=null;let figLearnCd=0;
+let safeRoomPenalty=1.0;let safeRoomTimer=0;let inSafeRoom=false;let safeRoomNotified=false;
+
+// ── ENTITIES ──────────────────────────────────────────────────────────
+const P={x:0,y:0,vx:0,vy:0,angle:0,radius:10,speed:1.55,
+  health:100,sanity:100,battery:100,batteryCount:0,stamina:100,
+  sprinting:false,flashOn:true,stepT:0,tapes:0};
+
+// The Figure — not a monster. A person. Standing still.
+const F={x:0,y:0,angle:0,radius:12,
+  state:'lurk',      // lurk | absent | aggressive
+  lurkTimer:0,
+  absentTimer:0,
+  opacity:0,opTarget:1,
+  flickerFr:0,
+  encroachCount:0,
+  growlCd:500,
+  stareTimer:0,   // builds while player stares at close range
+  jitterTimer:0,  // micro-jitter countdown
+  infraCd:0,      // infrasound cooldown
+};
+
+let MAP=[],MCOLS=30,MROWS=20,tapes=[],tapesTotal=0,exitPos={x:0,y:0},mapCache=null;let docs=[];
+
+// ── COLLISION ─────────────────────────────────────────────────────────
+function tAt(wx,wy){const tx=wx/TILE|0,ty=wy/TILE|0;if(tx<0||ty<0||tx>=MCOLS||ty>=MROWS)return 1;return MAP[ty][tx];}
+function resolve(e){for(let i=0;i<4;i++){let ok=true;for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){const tx=(e.x/TILE|0)+dx,ty=(e.y/TILE|0)+dy;if(tx<0||ty<0||tx>=MCOLS||ty>=MROWS)continue;if(MAP[ty][tx]===0)continue;const nx=Math.max(tx*TILE,Math.min(e.x,(tx+1)*TILE)),ny=Math.max(ty*TILE,Math.min(e.y,(ty+1)*TILE));const ddx=e.x-nx,ddy=e.y-ny,d2=ddx*ddx+ddy*ddy;if(d2<e.radius*e.radius){const d=Math.sqrt(d2)||.01;e.x+=ddx/d*(e.radius-d);e.y+=ddy/d*(e.radius-d);ok=false;}}if(ok)break;}}
+
+// Is the player's flashlight pointed at world coords?
+function isLooking(wx,wy){
+  if(!P.flashOn||P.battery<=0)return false;
+  const toA=Math.atan2(wy-P.y,wx-P.x);
+  let diff=Math.abs(P.angle-toA);if(diff>Math.PI)diff=Math.PI*2-diff;
+  const dist=Math.hypot(P.x-wx,P.y-wy);
+  return diff<(dist<TILE*3?.22:.12)&&dist<TILE*9;
+}
+
+// Random valid floor tile near a point
+function randFloor(nearX,nearY,minD,maxD){
+  const cands=[];
+  for(let ty=1;ty<MROWS-1;ty++)for(let tx=1;tx<MCOLS-1;tx++){
+    if(MAP[ty][tx]!==0)continue;
+    const cx=tx*TILE+TILE/2,cy=ty*TILE+TILE/2,d=Math.hypot(cx-nearX,cy-nearY);
+    if(d>=minD&&d<=maxD)cands.push([cx,cy]);
+  }
+  return cands.length?cands[Math.random()*cands.length|0]:null;
+}
+
+// ── PARTICLES ─────────────────────────────────────────────────────────
+let parts=[];
+function addP(x,y,vx,vy,life,r,col,grav=0){parts.push({x,y,vx,vy,life,ml:life,r,col,grav});}
+function dust(x,y){for(let i=0;i<2;i++){const a=Math.random()*Math.PI*2;addP(x+(Math.random()-.5)*4,y+(Math.random()-.5)*4,Math.cos(a)*.35,Math.sin(a)*.35-.1,36+Math.random()*28,Math.random()*1.3+.4,'rgba(108,88,68,',-0.025);}}
+function blood(x,y){for(let i=0;i<10;i++){const a=Math.random()*Math.PI*2,s=Math.random()*4+1;addP(x,y,Math.cos(a)*s,Math.sin(a)*s,20+Math.random()*18,Math.random()*2.5+1,'rgba(138,0,0,',.1);}}
+function staticBurst(x,y){for(let i=0;i<8;i++){addP(x+(Math.random()-.5)*22,y+(Math.random()-.5)*22,(Math.random()-.5)*2.5,(Math.random()-.5)*2.5,9+Math.random()*8,Math.random()*3+1,`rgba(${200+Math.random()*55|0},${200+Math.random()*55|0},${180+Math.random()*55|0},`,0);}}
+function updParts(){for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.x+=p.vx;p.y+=p.vy;p.vy+=p.grav;p.vx*=.95;p.vy*=.95;p.life--;if(p.life<=0)parts.splice(i,1);}}
+function drwParts(cx,cy){parts.forEach(p=>{ctx.fillStyle=p.col+(p.life/p.ml).toFixed(2)+')';ctx.beginPath();ctx.arc(p.x-cx,p.y-cy,p.r,0,Math.PI*2);ctx.fill();});}
+
+// ── LOAD LEVEL ────────────────────────────────────────────────────────
+function gL(){return Math.max(0,lvlN-1);}
+function lurkDur(){
+  const base=600+Math.random()*500+Math.max(0,(2-gL()))*400;
+  return difficulty==='hard'?base*.45:difficulty==='easy'?base*1.9:base*.95;
+}
+function loadLevel(n){
+  const L=LEVELS[n];
+  MAP=L.map.map(r=>[...r]);MCOLS=MAP[0].length;MROWS=MAP.length;
+  Object.assign(P,{x:L.pStart[0]*TILE,y:L.pStart[1]*TILE,vx:0,vy:0,
+    health:100,sanity:100,stamina:100,flashOn:true,tapes:0,stepT:0,sprinting:false});
+  Object.assign(F,{x:L.fStart[0]*TILE,y:L.fStart[1]*TILE,angle:Math.PI,
+    state:'lurk',lurkTimer:lurkDur(),absentTimer:0,
+    opacity:0,opTarget:1,flickerFr:0,encroachCount:0,growlCd:500,
+    stareTimer:0,jitterTimer:80,infraCd:0});
+  tapes=[];tapesTotal=L.tapeData.length;
+  (()=>{
+    const valid=[];
+    const ps=[L.pStart[0],L.pStart[1]],ex=[L.exit.x,L.exit.y];
+    for(let ty=1;ty<MROWS-1;ty++)for(let tx=1;tx<MCOLS-1;tx++){
+      if(MAP[ty][tx]!==0)continue;
+      const dp=Math.hypot(tx+.5-ps[0],ty+.5-ps[1]);
+      const de=Math.hypot(tx+.5-ex[0],ty+.5-ex[1]);
+      if(dp>=4&&de>=4)valid.push([tx+.5,ty+.5]);
+    }
+    for(let i=valid.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[valid[i],valid[j]]=[valid[j],valid[i]];}
+    const chosen=[];
+    for(const pos of valid){
+      if(chosen.length>=tapesTotal)break;
+      const tooClose=chosen.some(c=>Math.hypot(pos[0]-c[0],pos[1]-c[1])<5);
+      if(!tooClose)chosen.push(pos);
+    }
+    tapes=L.tapeData.map((td,i)=>{
+      const p=chosen[i]||[ps[0]+3+i,ps[1]];
+      return{x:p[0]*TILE,y:p[1]*TILE,taken:false,i,special:!!td.special,clues:td.clues||[]};
+    });
+  })();
+  batteryPickups=[];
+  if(!LEVELS[n].prelude){
+    const battCount=difficulty==='hard'?1:2;
+    const usedPos=tapes.map(t=>[t.x/TILE,t.y/TILE]);
+    const bValid=[];
+    const ps2=[L.pStart[0],L.pStart[1]],ex2=[L.exit.x,L.exit.y];
+    for(let ty=1;ty<MROWS-1;ty++)for(let tx=1;tx<MCOLS-1;tx++){
+      if(MAP[ty][tx]!==0)continue;
+      if(Math.hypot(tx+.5-ps2[0],ty+.5-ps2[1])<3)continue;
+      if(Math.hypot(tx+.5-ex2[0],ty+.5-ex2[1])<3)continue;
+      if(usedPos.length>0&&Math.min(...usedPos.map(p=>Math.hypot(tx+.5-p[0],ty+.5-p[1])))<4)continue;
+      bValid.push([tx+.5,ty+.5]);
+    }
+    for(let i=bValid.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bValid[i],bValid[j]]=[bValid[j],bValid[i]];}
+    for(let b=0;b<Math.min(battCount,bValid.length);b++)batteryPickups.push({x:bValid[b][0]*TILE,y:bValid[b][1]*TILE,taken:false});
+  }
+  noiseLevel=0;lisScreamed=false;
+  if(LEVELS[n].useListener){
+    const ls=LEVELS[n].lStart||[15.5,10.5];
+    LIS.x=ls[0]*TILE;LIS.y=ls[1]*TILE;LIS.state='patrol';LIS.opacity=0;
+    LIS.patrolTarget={x:LIS.x,y:LIS.y};
+    lastNoisePos={x:LIS.x,y:LIS.y};
+  }
+  docs=[];
+  if(LEVELS[n].doc){
+    const d=LEVELS[n].doc;
+    docs=[{x:(d.tx+.5)*TILE,y:(d.ty+.5)*TILE,taken:false,title:d.title,lines:d.lines}];
+  }
+  exitPos={x:L.exit.x*TILE,y:L.exit.y*TILE};
+  visitedZones=new Set();
+  envMarkers=L.envChanges.map(e=>({x:e.x*TILE,y:e.y*TILE,active:false}));
+  parts=[];shk=0;glitch=0;msg='';
+  ghostTimer=320+Math.random()*300;ghostFr=0;
+  phantomTimer=200+Math.random()*200;
+  exitLocked=false;collectedClues=[];clueMap={};evidenceActive=false;evidenceTimer=0;exitPuzzleActive=false;exitPuzzleResult=null;exitPuzzleInput='';noiseLevel=0;
+  safeRoomPenalty=1.0;safeRoomTimer=0;inSafeRoom=false;safeRoomNotified=false;
+  keycardFound=false;lockedRoomOpen=false;lockedRoomDoc=null;keycardItem=null;scriptedDone=new Set();visitedTileMap=new Map();figLearnTarget=null;figLearnCd=0;creakCooldown=0;
+  if(!LEVELS[n].prelude&&LEVELS[n].lockedRoom){const lr=LEVELS[n].lockedRoom;keycardItem={x:(lr.keyX+.5)*TILE,y:(lr.keyY+.5)*TILE,taken:false};}
+  if(n===0){initRain();startNoirMusic();}
+  else{noirMusicStarted=false;if(n===1){bgMusicStarted=false;startBGMusic();}}
+  // Bake map texture
+  mapCache=document.createElement('canvas');mapCache.width=MCOLS*TILE;mapCache.height=MROWS*TILE;
+  const mc=mapCache.getContext('2d');
+  mc.fillStyle='#0e0b07';mc.fillRect(0,0,mapCache.width,mapCache.height);
+  for(let ty=0;ty<MROWS;ty++)for(let tx=0;tx<MCOLS;tx++){
+    const v=tv(tx,ty),sx=tx*TILE,sy=ty*TILE,isW=MAP[ty][tx]!==0;
+    mc.drawImage(isW?WALL_T:FLOOR_T,v*TILE,0,TILE,TILE,sx,sy,TILE,TILE);
+    if(isW){mc.fillStyle='rgba(255,255,255,0.025)';mc.fillRect(sx,sy,TILE,2);mc.fillStyle='rgba(0,0,0,0.38)';mc.fillRect(sx,sy+TILE-4,TILE,4);}
+  }
+  mc.globalCompositeOperation='multiply';
+  // Per-level color grade: L1 amber archive / L2 cold blue-gray concrete / L3 deep red containment
+  mc.fillStyle=gL()===0?'rgba(205,172,112,0.14)':gL()===1?'rgba(108,148,178,0.22)':gL()===2?'rgba(188,80,80,0.26)':gL()===3?'rgba(120,60,188,0.20)':'rgba(60,150,80,0.18)';
+  mc.fillRect(0,0,mapCache.width,mapCache.height);
+  mc.globalCompositeOperation='source-over';
+  // Extra darkness tint for deeper levels
+  if(gL()===1){mc.fillStyle='rgba(0,8,18,0.20)';mc.fillRect(0,0,mapCache.width,mapCache.height);}
+  if(gL()===2){mc.fillStyle='rgba(18,0,0,0.32)';mc.fillRect(0,0,mapCache.width,mapCache.height);}
+  if(gL()===3){mc.fillStyle='rgba(10,0,22,0.28)';mc.fillRect(0,0,mapCache.width,mapCache.height);}
+  if(gL()===4){mc.fillStyle='rgba(0,14,4,0.24)';mc.fillRect(0,0,mapCache.width,mapCache.height);}
+  if(LEVELS[n].creakTiles){LEVELS[n].creakTiles.forEach(t=>{mc.fillStyle='rgba(0,0,0,0.28)';mc.fillRect(t.x*TILE,t.y*TILE,TILE,TILE);mc.strokeStyle='rgba(80,50,20,0.22)';mc.lineWidth=1;mc.beginPath();mc.moveTo(t.x*TILE+4,t.y*TILE+4);mc.lineTo(t.x*TILE+TILE-4,t.y*TILE+TILE-4);mc.stroke();mc.beginPath();mc.moveTo(t.x*TILE+TILE-4,t.y*TILE+4);mc.lineTo(t.x*TILE+4,t.y*TILE+TILE-4);mc.stroke();});}
+}
+
+// ── FIGURE AI — psychological horror ─────────────────────────────────
+function updFigure(){
+  if(LEVELS[lvlN].noFigure)return;
+  if(LEVELS[lvlN].useListener)return;
+  if(LEVELS[lvlN].safeRoom){
+    const sr=LEVELS[lvlN].safeRoom;
+    const pTx=Math.floor(P.x/TILE),pTy=Math.floor(P.y/TILE);
+    if(pTx>=sr.x1&&pTx<=sr.x2&&pTy>=sr.y1&&pTy<=sr.y2){
+      F.state='absent';F.opacity=Math.max(0,F.opacity-.03);return;
+    }
+  }
+  F.opacity+=(F.opTarget-F.opacity)*.07;
+  if(F.flickerFr>0){F.flickerFr--;F.opacity=Math.random()>.45?F.opTarget:.05;}
+
+  const dist=Math.hypot(P.x-F.x,P.y-F.y);
+  const looking=isLooking(F.x,F.y);
+
+  // Slow turn to face player
+  if(F.state!=='absent'){
+    const ta=Math.atan2(P.y-F.y,P.x-F.x);
+    let da=ta-F.angle;if(da>Math.PI)da-=Math.PI*2;if(da<-Math.PI)da+=Math.PI*2;
+    F.angle+=da*.018;
+  }
+
+  // Rare proximity breathing
+  F.growlCd--;
+  if(F.growlCd<=0&&dist<TILE*5&&F.state!=='absent'){
+    if(Math.random()<.35)sfxBreathing();
+    F.growlCd=500+Math.random()*600;
+  }
+
+  // Infrasound when very close
+  F.infraCd--;
+  if(F.infraCd<=0&&F.state!=='absent'&&dist<TILE*3){
+    sfxInfrasound();F.infraCd=280+Math.random()*200;
+  }
+
+  if(F.state==='lurk'){
+    F.opTarget=1;
+    F.lurkTimer--;
+
+    // Micro-jitter: figure twitches slightly while standing — movement without moving
+    F.jitterTimer--;
+    if(F.jitterTimer<=0&&F.opacity>.6&&!looking){
+      F.x+=(Math.random()-.5)*9;F.y+=(Math.random()-.5)*9;resolve(F);
+      F.jitterTimer=45+Math.random()*55;
+      if(Math.random()<.28)sfxStatic(.009,.06);
+    }
+    // Figure learns: drift toward corridors the player revisits
+    if(figLearnCd>0)figLearnCd--;
+    if(figLearnCd<=0&&visitedTileMap.size>0&&Math.random()<.004){
+      const hz=[];visitedTileMap.forEach((c,k)=>{if(c>=3){const[hx,hy]=k.split(',').map(Number);hz.push({x:(hx+.5)*TILE,y:(hy+.5)*TILE});}});
+      if(hz.length>0){figLearnTarget=hz[Math.floor(Math.random()*hz.length)];figLearnCd=120+Math.random()*80;}
+    }
+    if(figLearnTarget&&!looking){
+      const dtl=Math.hypot(F.x-figLearnTarget.x,F.y-figLearnTarget.y);
+      if(dtl<TILE){figLearnTarget=null;}
+      else{F.x+=(figLearnTarget.x-F.x)/dtl*.7;F.y+=(figLearnTarget.y-F.y)/dtl*.7;resolve(F);}
+    }
+
+    // STARE-BACK: very close and player is looking → it doesn't immediately vanish.
+    // It stares back. For 1.5 seconds. Then the lights flicker and it goes.
+    if(looking&&dist<TILE*4&&F.opacity>.4){
+      F.stareTimer++;
+      if(F.stareTimer%22===0)glitch=4; // lights flicker while being stared at
+      if(F.stareTimer>90){           // ~1.5 seconds — then it vanishes
+        F.state='absent';F.opTarget=0;
+        F.absentTimer=90+Math.random()*150;
+        sfxStatic(.032,.22);glitch=14;F.stareTimer=0;
+      }
+      return;
+    }
+    // Further away: instant vanish as before
+    if(looking&&dist<TILE*8&&F.opacity>.4){
+      F.stareTimer=0;
+      F.state='absent';F.opTarget=0;
+      F.absentTimer=90+Math.random()*150;
+      sfxStatic(.018,.15);glitch=6;
+      return;
+    }
+    F.stareTimer=0;
+
+    // Encroach: when timer expires and not looked at → teleport closer
+    if(F.lurkTimer<=0){
+      if(!looking){
+        const minD=gL()===0?TILE*5:gL()===1?TILE*3.5:TILE*1.8;
+        const maxD=TILE*(9-Math.min(F.encroachCount,4+lvlN));
+        const pos=randFloor(P.x,P.y,minD,Math.max(minD+TILE,maxD));
+        if(pos){
+          F.x=pos[0];F.y=pos[1];
+          // 30% chance: figure faces AWAY from player — seeing a person turned away is wrong
+          const towardPlayer=Math.atan2(P.y-F.y,P.x-F.x);
+          F.angle=Math.random()<.30?towardPlayer+Math.PI:towardPlayer;
+          F.encroachCount++;
+        }
+        F.flickerFr=2;sfxTeleport();
+        F.lurkTimer=lurkDur();
+      } else {
+        F.lurkTimer=100;
+      }
+    }
+
+    // Level 3: goes aggressive when close and sanity is low
+    if(gL()===2&&F.encroachCount>=3&&dist<TILE*2&&P.sanity<45){
+      F.state='aggressive';sfxFigureScream();
+    }
+
+  } else if(F.state==='absent'){
+    F.opTarget=0;
+    F.absentTimer--;
+    if(F.absentTimer<=0){
+      const pos=randFloor(P.x,P.y,TILE*5,TILE*13);
+      if(pos){F.x=pos[0];F.y=pos[1];}
+      F.state='lurk';F.lurkTimer=lurkDur();F.flickerFr=3;F.stareTimer=0;
+      if(Math.random()<.45)sfxWhisper();
+    }
+
+  } else if(F.state==='aggressive'){
+    F.opTarget=1;
+    if(looking&&dist<TILE*6){F.state='absent';F.opTarget=0;F.absentTimer=60+Math.random()*80;return;}
+    // Stuttering movement — skips every other frame — stop-motion, deeply wrong
+    if(fr%2===0){
+      const sp=(gL()===2?4.4:3.8)*(difficulty==='easy'?.7:difficulty==='hard'?1.65:.95)*safeRoomPenalty;
+      if(dist>1){F.x+=(P.x-F.x)/dist*sp;F.y+=(P.y-F.y)/dist*sp;resolve(F);}
+    }
+    if(fr%14===0&&dist<TILE*8)sfxFigureStep();
+    // Contact = instant death, no scream
+    if(dist<F.radius+P.radius+4){
+      P.health=0;shk=22;blood(P.x,P.y);
+      sfxStatic(.07,.3);glitch=80;
+      gs='dead';deadFr=fr;
+      setTimeout(sfxDeadMusic,600);
+      return;
+    }
+  }
+
+  // Sanity drain: proximity
+  if(F.state!=='absent'&&dist<TILE*4){
+    const f=1-dist/(TILE*4);
+    P.sanity=Math.max(0,P.sanity-.07*(F.state==='aggressive'?3:1)*f);
+  }
+  // Adjacent and not looking
+  if(dist<TILE*1.5&&!looking&&F.state!=='absent'){
+    P.sanity=Math.max(0,P.sanity-.2);
+  }
+  // Sanity zero = instant death
+  if(P.sanity<=0){
+    P.health=0;sfxStatic(.04,.2);
+    gs='dead';deadFr=fr;setTimeout(sfxDeadMusic,600);
+  }
+}
+
+// ── GHOST SYSTEM — VHS shows something that isn't there ───────────────
+function updGhost(){
+  ghostTimer--;
+  // Extra ghost flashes at low sanity
+  if(P.sanity<35&&Math.random()<.003&&ghostFr<=0){
+    ghostTimer=0;
+  }
+  if(ghostTimer<=0&&gs==='playing'){
+    ghostTimer=320+Math.random()*500;
+    const cands=[];
+    const stx=camX/TILE|0,sty=camY/TILE|0;
+    for(let ty=sty;ty<sty+H/TILE+2;ty++)for(let tx=stx;tx<stx+W/TILE+2;tx++){
+      if(!MAP[ty]||MAP[ty][tx]!==0)continue;
+      const wx=tx*TILE+TILE*.5,wy=ty*TILE+TILE*.5;
+      const dp=Math.hypot(P.x-wx,P.y-wy),df=Math.hypot(F.x-wx,F.y-wy);
+      if(dp>TILE*3&&dp<TILE*10&&df>TILE*3)cands.push([wx,wy]);
+    }
+    if(cands.length){const pos=cands[Math.random()*cands.length|0];ghostX=pos[0];ghostY=pos[1];ghostFr=1+(Math.random()<.25?1:0);}
+  }
+}
+
+// ── RAIN SYSTEM ───────────────────────────────────────────────────────
+function initRain(){rainDrops=Array.from({length:130},()=>({x:Math.random()*W,y:Math.random()*H,vy:9+Math.random()*7,vx:-1-Math.random(),len:10+Math.random()*14,a:.15+Math.random()*.2}));}
+function updRain(){if(lvlN!==0)return;rainDrops.forEach(d=>{d.y+=d.vy;d.x+=d.vx;if(d.y>H+20){d.y=-20;d.x=Math.random()*W;}if(d.x<-10)d.x=W;});}
+function drwRain(){
+  if(lvlN!==0)return;
+  ctx.save();
+  rainDrops.forEach(d=>{ctx.strokeStyle=`rgba(160,185,210,${d.a})`;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(d.x,d.y);ctx.lineTo(d.x+d.vx*2,d.y+d.len);ctx.stroke();});
+  ctx.restore();
+}
+
+// ── PHANTOM SOUNDS — footsteps/breathing with no source ──────────────
+function updPhantom(){
+  phantomTimer--;
+  if(phantomTimer<=0&&gs==='playing'){
+    phantomTimer=150+Math.random()*280+(2-lvlN)*60;
+    const roll=Math.random();
+    if(roll<.38)sfxPhantomStep();
+    else if(roll<.60)sfxBreathing();
+    else if(roll<.76)sfxWhisper();
+    else if(roll<.84)sfxSlam();
+    // ~16% chance: intentional silence — makes the heard sounds worse
+  }
+}
+
+// ── ENV CHANGES — slight differences when you return ─────────────────
+function updEnv(){
+  const zone=`${(P.x/TILE/4)|0}_${(P.y/TILE/4)|0}`;
+  if(visitedZones.has(zone)){
+    envMarkers.forEach(m=>{if(!m.active&&Math.hypot(P.x-m.x,P.y-m.y)<TILE*4)m.active=true;});
+  } else visitedZones.add(zone);
+}
+
+// ── EXIT CIPHER SUBMIT ────────────────────────────────────────────────
+function submitExitPuzzle(){
+  if(exitPuzzleInput===LEVELS[lvlN].word){exitPuzzleResult='correct';exitPuzzleResultTimer=90;}
+  else{exitPuzzleInput='';exitWrongFlash=30;}
+}
+
+// ── PLAYER UPDATE ─────────────────────────────────────────────────────
+function updPlayer(){
+  P.angle=Math.atan2(mY-H/2,mX-W/2);
+  // Evidence display: player frozen, figure still moves
+  if(evidenceActive){
+    if(--evidenceTimer<=0)evidenceActive=false;
+    return;
+  }
+  // Exit cipher: player frozen, figure still moves
+  if(exitPuzzleActive){
+    if(exitPuzzleResult==='correct'){
+      if(--exitPuzzleResultTimer<=0){
+        exitPuzzleActive=false;exitPuzzleResult=null;
+        if(lvlN<LEVELS.length-1){gs='transition';transFr=fr;}
+        else{gs='win';winFr=fr;creditsActive=false;sfxWin();}
+      }
+    } else if(exitPuzzleResult==='timeout'){
+      exitPuzzleActive=false;exitPuzzleResult=null;exitLocked=true;F.state='aggressive';sfxFigureScream();
+    } else {
+      if(exitWrongFlash>0)exitWrongFlash--;
+      if(--exitPuzzleTimer<=0){exitPuzzleResult='timeout';}
+    }
+    return;
+  }
+  let dx=0,dy=0;
+  if(K['w']||K['arrowup'])dy-=1;if(K['s']||K['arrowdown'])dy+=1;
+  if(K['a']||K['arrowleft'])dx-=1;if(K['d']||K['arrowright'])dx+=1;
+  P.sprinting=!!(K['shift']&&P.stamina>0&&(dx||dy));
+  const spd=P.sprinting?P.speed*1.45:P.speed;
+  if(dx||dy){
+    const l=Math.sqrt(dx*dx+dy*dy);P.vx=dx/l*spd;P.vy=dy/l*spd;
+    P.stepT--;if(P.stepT<=0){sfxStep();dust(P.x,P.y);P.stepT=P.sprinting?10:20;}
+    if(P.sprinting)P.stamina=Math.max(0,P.stamina-.52);
+    else P.stamina=Math.min(100,P.stamina+.06);
+  } else {P.vx=0;P.vy=0;P.stamina=Math.min(100,P.stamina+.22);}
+  if(P.stamina<=0&&!staminaExhausted){
+    staminaExhausted=true;
+    try{const buf=A.createBuffer(1,Math.floor(A.sampleRate*.4),A.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++){const t=i/A.sampleRate;d[i]=(Math.random()*2-1)*(t<.05?t/.05:Math.exp(-(t-.05)*5))*.55;}const s=A.createBufferSource(),g=A.createGain(),bp=A.createBiquadFilter();bp.type='bandpass';bp.frequency.value=800;bp.Q.value=2;s.buffer=buf;s.connect(bp);bp.connect(g);g.connect(mg);g.gain.value=.22;s.start();}catch(e){}
+  }
+  if(P.stamina>25)staminaExhausted=false;
+  P.x+=P.vx;P.y+=P.vy;resolve(P);
+  if(P.flashOn&&!LEVELS[lvlN].prelude){const bDrain=difficulty==='hard'?.024:difficulty==='easy'?.010:.016;P.battery=Math.max(0,P.battery-bDrain);if(P.battery===0)P.flashOn=false;}
+  if(P.battery<20&&!LEVELS[lvlN].prelude)battWarnFlash=(battWarnFlash+1)%120;else battWarnFlash=0;
+  if(!LEVELS[lvlN].prelude){
+    if(P.flashOn&&P.battery>0){P.sanity=Math.min(100,P.sanity+.06);}
+    else{P.sanity=Math.max(0,P.sanity-.038);}
+  }
+  if(P.sanity<35&&fr%60===0)sfxHeart(.06+.11*(1-P.sanity/35));
+  // Safe room detection and overstay penalty
+  if(!LEVELS[lvlN].prelude&&LEVELS[lvlN].safeRoom){
+    const sr=LEVELS[lvlN].safeRoom;
+    const pTx=Math.floor(P.x/TILE),pTy=Math.floor(P.y/TILE);
+    const nowIn=pTx>=sr.x1&&pTx<=sr.x2&&pTy>=sr.y1&&pTy<=sr.y2;
+    if(nowIn&&!inSafeRoom){
+      inSafeRoom=true;safeRoomTimer=0;
+      if(!safeRoomNotified){
+        safeRoomNotified=true;
+        msg='SAFE ROOM  --  The monster cannot follow you here.\nSanity recovers. But do not overstay  --  it will grow stronger.';msgFr=fr;
+      } else {
+        msg='SAFE ROOM  --  The monster grows stronger the longer you linger.';msgFr=fr;
+      }
+    } else if(!nowIn&&inSafeRoom){
+      inSafeRoom=false;
+    }
+    if(inSafeRoom){
+      safeRoomTimer++;
+      const penInterval=difficulty==='hard'?300:480;
+      if(safeRoomTimer>penInterval&&(safeRoomTimer-penInterval)%penInterval===0){
+        const inc=difficulty==='hard'?.30:.15;
+        safeRoomPenalty=Math.min(safeRoomPenalty+inc,3.0);
+        msg=`WARNING  --  MONSTER GROWS STRONGER  +${Math.round(inc*100)}%  (TOTAL +${Math.round((safeRoomPenalty-1)*100)}%)`;msgFr=fr;
+        shk=10;
+      }
+    }
+  }
+  // Tile tracking, creak tiles, scripted events, keycard
+  {const pTx=Math.floor(P.x/TILE),pTy=Math.floor(P.y/TILE);
+  if(!LEVELS[lvlN].prelude&&!LEVELS[lvlN].useListener){const tk=`${pTx},${pTy}`;visitedTileMap.set(tk,(visitedTileMap.get(tk)||0)+1);}
+  if(LEVELS[lvlN].creakTiles&&creakCooldown<=0){if(LEVELS[lvlN].creakTiles.some(t=>t.x===pTx&&t.y===pTy)){creakCooldown=90;try{const buf=A.createBuffer(1,Math.floor(A.sampleRate*.18),A.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*.9;const s=A.createBufferSource(),g=A.createGain(),bp=A.createBiquadFilter();bp.type='bandpass';bp.frequency.value=180;bp.Q.value=3;s.buffer=buf;s.connect(bp);bp.connect(g);g.connect(mg);g.gain.value=.18;s.start();}catch(e){}if(LEVELS[lvlN].useListener){noiseLevel=Math.min(100,noiseLevel+40);}else if(!LEVELS[lvlN].prelude&&!LEVELS[lvlN].noFigure){F.state='aggressive';F.opTarget=1;shk=8;}msg='CREAK — The floor gave you away.';msgFr=fr;}}
+  if(creakCooldown>0)creakCooldown--;
+  if(LEVELS[lvlN].scriptedEvents){LEVELS[lvlN].scriptedEvents.forEach((ev,i)=>{if(scriptedDone.has(i))return;if(Math.abs(pTx-ev.tx)<=1&&Math.abs(pTy-ev.ty)<=1){scriptedDone.add(i);if(ev.type==='doorSlam'){sfxSlam();shk=10;msg='A door slams somewhere deep in the building.';msgFr=fr;}else if(ev.type==='flicker'){P.flashOn=false;setTimeout(()=>{if(P.battery>0)P.flashOn=true;},800+Math.random()*600);try{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sawtooth';o.frequency.value=60;g.gain.setValueAtTime(.05,A.currentTime);g.gain.exponentialRampToValueAtTime(.0001,A.currentTime+.4);o.start();o.stop(A.currentTime+.42);}catch(e){}msg='The light flickers and dies.';msgFr=fr;}else if(ev.type==='shapeFlash'){if(!LEVELS[lvlN].useListener){ghostX=ev.tx*TILE;ghostY=ev.ty*TILE;ghostFr=3;}sfxStatic(.035,.2);msg='Something moved at the edge of the light.';msgFr=fr;}}});}
+  if(keycardItem&&!keycardItem.taken&&Math.hypot(P.x-keycardItem.x,P.y-keycardItem.y)<TILE*.75){keycardItem.taken=true;keycardFound=true;try{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sine';o.frequency.value=660;g.gain.setValueAtTime(0,A.currentTime);g.gain.linearRampToValueAtTime(.07,A.currentTime+.04);g.gain.linearRampToValueAtTime(0,A.currentTime+.3);o.start();o.stop(A.currentTime+.32);}catch(e){}msg='KEYCARD FOUND  --  Use near a locked door  [SPACE]';msgFr=fr;}
+  if(lockedRoomDoc&&!lockedRoomDoc.taken&&Math.hypot(P.x-lockedRoomDoc.x,P.y-lockedRoomDoc.y)<TILE*.75){lockedRoomDoc.taken=true;if(LEVELS[lvlN].useListener)noiseLevel=Math.min(100,noiseLevel+18);const lr=LEVELS[lvlN].lockedRoom;if(!collectedDocs.find(x=>x.title===lr.docTitle))collectedDocs.push({title:lr.docTitle,lines:lr.docLines,level:LEVELS[lvlN].name});evidenceActive=true;evidenceTimer=900;evidenceClues=[];evidenceMsg='['+lr.docTitle+']\n'+lr.docLines.join('\n');}
+  }
+  // Tape proximity beep
+  if(!LEVELS[lvlN].prelude){
+    const unTaken=tapes.filter(t=>!t.taken);
+    if(unTaken.length>0){
+      const nd=Math.min(...unTaken.map(t=>Math.hypot(P.x-t.x,P.y-t.y)));
+      if(nd<TILE*4.5){
+        tapeBeepTimer--;
+        if(tapeBeepTimer<=0){
+          const rate=Math.floor(8+(nd/(TILE*4.5))*28);
+          tapeBeepTimer=rate;
+          try{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sine';o.frequency.value=1900;g.gain.setValueAtTime(0,A.currentTime);g.gain.linearRampToValueAtTime(.018,A.currentTime+.012);g.gain.linearRampToValueAtTime(0,A.currentTime+.05);o.start();o.stop(A.currentTime+.06);}catch(e){}
+        }
+      } else {tapeBeepTimer=0;}
+    }
+  }
+  tapes.forEach((t,i)=>{
+    if(t.taken)return;
+    if(Math.hypot(P.x-t.x,P.y-t.y)<TILE*.75){
+      t.taken=true;P.tapes++;
+      if(LEVELS[lvlN].useListener)noiseLevel=Math.min(100,noiseLevel+18);
+      msg=LEVELS[lvlN].msgs[i]||'';msgFr=fr;
+      if(t.special){sfxVoiceTape();glitch=28;}
+      else{sfxTape();glitch=12;}
+      staticBurst(t.x,t.y);
+      if(t.clues&&t.clues.length){
+        t.clues.forEach(c=>{collectedClues.push(c);const[enc,dec]=c.split('=');clueMap[enc]=dec;});
+        evidenceActive=true;evidenceTimer=900;evidenceClues=[...t.clues];evidenceMsg=LEVELS[lvlN].msgs[i]||'';
+      }
+    }
+  });
+  docs.forEach(d=>{
+    if(d.taken)return;
+    if(Math.hypot(P.x-d.x,P.y-d.y)<TILE*.75){
+      d.taken=true;
+      if(LEVELS[lvlN].useListener)noiseLevel=Math.min(100,noiseLevel+18);
+      if(!collectedDocs.find(x=>x.title===d.title))collectedDocs.push({title:d.title,lines:d.lines,level:LEVELS[lvlN].name});
+      evidenceActive=true;evidenceTimer=900;
+      evidenceClues=[];
+      evidenceMsg='['+d.title+']\n'+d.lines.join('\n');
+    }
+  });
+  batteryPickups.forEach(b=>{
+    if(b.taken)return;
+    if(Math.hypot(P.x-b.x,P.y-b.y)<TILE*.75){
+      b.taken=true;P.batteryCount++;
+      if(LEVELS[lvlN].useListener)noiseLevel=Math.min(100,noiseLevel+8);
+      try{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sine';o.frequency.value=440;g.gain.setValueAtTime(0,A.currentTime);g.gain.linearRampToValueAtTime(.06,A.currentTime+.03);g.gain.linearRampToValueAtTime(0,A.currentTime+.22);o.start();o.stop(A.currentTime+.24);}catch(e){}
+      msg='SPARE BATTERY RECOVERED  --  PRESS R TO RECHARGE';msgFr=fr;
+    }
+  });
+  if(Math.hypot(P.x-exitPos.x,P.y-exitPos.y)<TILE*.9&&P.tapes>=tapesTotal){
+    if(LEVELS[lvlN].prelude){
+      if(lvlN<LEVELS.length-1){gs='transition';transFr=fr;}
+      else{gs='win';winFr=fr;creditsActive=false;sfxWin();}
+    } else if(!exitLocked&&!exitPuzzleActive){
+      exitPuzzleActive=true;exitPuzzleInput='';exitPuzzleTimer=difficulty==='easy'?21600:difficulty==='hard'?5400:10800;exitPuzzleResult=null;exitWrongFlash=0;
+    }
+  }
+}
+function toggleFlash(){if(P.battery>0){P.flashOn=!P.flashOn;tone(P.flashOn?680:240,.08,'square',.04);}}
+function rechargeFlash(){
+  if(P.batteryCount<=0){
+    tone(160,.16,'sawtooth',.06);
+    msg='NO SPARE BATTERIES  --  FIND ONE IN THE BUILDING';msgFr=fr;return;
+  }
+  P.batteryCount--;P.battery=100;P.flashOn=true;
+  try{
+    const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);
+    o.type='sine';o.frequency.value=520;
+    g.gain.setValueAtTime(0,A.currentTime);g.gain.linearRampToValueAtTime(.08,A.currentTime+.04);
+    g.gain.linearRampToValueAtTime(0,A.currentTime+.28);o.start();o.stop(A.currentTime+.3);
+    const o2=A.createOscillator(),g2=A.createGain();o2.connect(g2);g2.connect(mg);
+    o2.type='sine';o2.frequency.value=740;
+    g2.gain.setValueAtTime(0,A.currentTime+.14);g2.gain.linearRampToValueAtTime(.055,A.currentTime+.18);
+    g2.gain.linearRampToValueAtTime(0,A.currentTime+.38);o2.start();o2.stop(A.currentTime+.4);
+  }catch(e){}
+  msg='BATTERY REPLACED  --  FLASHLIGHT RECHARGED';msgFr=fr;
+}
+function onAct(){
+  A.resume();
+  if(gs==='intro'){if(introSlide===0)playIntroMusic();introSlide++;if(introSlide>=INTRO_SLIDES.length){gs='title';introSlide=0;startTitleMusic();}return;}
+  if(gs==='playing'&&!paused&&!lockedRoomOpen&&keycardFound&&LEVELS[lvlN]?.lockedRoom){
+    const lr=LEVELS[lvlN].lockedRoom;
+    if(Math.hypot(P.x-(lr.doorX+.5)*TILE,P.y-(lr.doorY+.5)*TILE)<TILE*1.5){
+      lockedRoomOpen=true;MAP[lr.doorY][lr.doorX]=0;lr.roomTiles.forEach(t=>{if(MAP[t.y]&&MAP[t.y][t.x]!==undefined)MAP[t.y][t.x]=0;});
+      const mc2=mapCache.getContext('2d');const tilesToUpd=[{x:lr.doorX,y:lr.doorY},...lr.roomTiles];
+      tilesToUpd.forEach(({x,y})=>{const v=tv(x,y),sx=x*TILE,sy=y*TILE;mc2.drawImage(FLOOR_T,v*TILE,0,TILE,TILE,sx,sy,TILE,TILE);mc2.globalCompositeOperation='multiply';mc2.fillStyle=gL()===0?'rgba(205,172,112,0.14)':gL()===1?'rgba(108,148,178,0.22)':gL()===2?'rgba(188,80,80,0.26)':gL()===3?'rgba(120,60,188,0.20)':'rgba(60,150,80,0.18)';mc2.fillRect(sx,sy,TILE,TILE);mc2.globalCompositeOperation='source-over';const dk=gL()===1?'rgba(0,8,18,0.20)':gL()===2?'rgba(18,0,0,0.32)':gL()===3?'rgba(10,0,22,0.28)':gL()===4?'rgba(0,14,4,0.24)':null;if(dk){mc2.fillStyle=dk;mc2.fillRect(sx,sy,TILE,TILE);}});
+      const midTile=lr.roomTiles[Math.floor(lr.roomTiles.length/2)];
+      lockedRoomDoc={x:(midTile.x+.5)*TILE,y:(midTile.y+.5)*TILE,taken:false};
+      tone(440,.04,'square',.06);tone(550,.08,'square',.04);shk=12;
+      msg='LOCKED ROOM OPENED  --  Search inside for classified documents.';msgFr=fr;
+      return;
+    }
+  }
+  if(evidenceActive){evidenceActive=false;evidenceTimer=0;return;}
+  if(gs==='title'){titleMusicStarted=false;startBGMusic();gs='playing';lvlN=0;loadLevel(0);return;}
+  if(gs==='dead'){paused=false;gs='playing';lvlN=0;loadLevel(0);return;}
+  if(gs==='win'){if(!creditsActive){creditsActive=true;return;}paused=false;creditsActive=false;gs='title';startTitleMusic();return;}
+  if(gs==='transition'&&fr-transFr>90){paused=false;lvlN++;loadLevel(lvlN);gs='playing';return;}
+}
+
+// ── LIGHTING ──────────────────────────────────────────────────────────
+const lc_=document.createElement('canvas');lc_.width=W;lc_.height=H;
+const lx=lc_.getContext('2d');
+function drawLight(px,py,ang,bat,on){
+  lx.clearRect(0,0,W,H);
+  // Per-level ambient darkness color
+  lx.fillStyle=lvlN===0?'rgba(8,12,18,0.18)':gL()===0?'rgba(0,0,0,0.52)':gL()===1?'rgba(2,5,10,0.56)':gL()===2?'rgba(10,2,2,0.61)':gL()===3?'rgba(8,0,18,0.58)':'rgba(4,10,4,0.63)';
+  lx.fillRect(0,0,W,H);
+  if(lvlN===0){const ag=lx.createRadialGradient(px,py,0,px,py,TILE*9);ag.addColorStop(0,'rgba(170,190,215,0.38)');ag.addColorStop(1,'rgba(0,0,0,0)');lx.fillStyle=ag;lx.fillRect(0,0,W,H);}
+  lx.globalCompositeOperation='destination-out';
+  if(on&&bat>0){
+    const fl=bat<18&&Math.random()<.22*(1-bat/18)?(.32+Math.random()*.55):1;
+    const range=TILE*6.5*(bat/100)*fl,half=Math.PI/4.2;
+    const g=lx.createRadialGradient(px,py,0,px,py,range);
+    // Per-level flashlight cone color: L1 warm amber / L2 cold white-blue / L3 dim red
+    const fc=lvlN===0?['rgba(220,235,255,0.96)','rgba(180,205,240,0.60)','rgba(120,150,190,0.22)']:
+             gL()===0?['rgba(255,232,172,0.97)','rgba(255,200,138,0.6)','rgba(172,138,88,0.2)']:
+             gL()===1?['rgba(215,228,248,0.94)','rgba(165,195,228,0.55)','rgba(85,125,168,0.18)']:
+             gL()===2?['rgba(255,195,165,0.92)','rgba(228,145,125,0.52)','rgba(148,65,65,0.18)']:
+             gL()===3?['rgba(210,185,255,0.93)','rgba(175,140,230,0.55)','rgba(100,65,168,0.18)']:
+                     ['rgba(185,230,185,0.90)','rgba(130,195,140,0.52)','rgba(60,120,70,0.18)'];
+    g.addColorStop(0,fc[0]);g.addColorStop(.28,fc[1]);g.addColorStop(.66,fc[2]);g.addColorStop(1,'rgba(0,0,0,0)');
+    lx.fillStyle=g;lx.beginPath();lx.moveTo(px,py);lx.arc(px,py,range,ang-half,ang+half);lx.closePath();lx.fill();
+    const bg=lx.createRadialGradient(px,py,0,px,py,TILE*.85);bg.addColorStop(0,'rgba(255,225,155,0.3)');bg.addColorStop(1,'rgba(0,0,0,0)');lx.fillStyle=bg;lx.fillRect(px-TILE,py-TILE,TILE*2,TILE*2);
+  } else {
+    const eg=lx.createRadialGradient(px,py,0,px,py,TILE*.45);eg.addColorStop(0,'rgba(80,48,16,0.28)');eg.addColorStop(1,'rgba(0,0,0,0)');lx.fillStyle=eg;lx.fillRect(0,0,W,H);
+  }
+  lx.globalCompositeOperation='source-over';
+  ctx.drawImage(lc_,0,0);
+}
+
+// ── DRAW THE FIGURE — wrong proportions, wrong in ways you can't name ─
+function drwFigure(sx,sy,alpha,isGhost){
+  if(alpha<.02)return;
+  ctx.save();ctx.translate(sx,sy);ctx.globalAlpha=alpha;
+  ctx.rotate(F.angle+Math.PI/2);
+
+  // Unnaturally tall and thin — human but stretched
+  ctx.scale(0.78,1.38);
+
+  const gc=isGhost?.48:.9;
+
+  // Shadow — slightly too long for the figure
+  if(!isGhost){ctx.fillStyle='rgba(0,0,0,0.28)';ctx.beginPath();ctx.ellipse(3,4,9,20,0.08,0,Math.PI*2);ctx.fill();}
+
+  // Long coat — narrow, tall, slightly asymmetric hem
+  ctx.fillStyle=`rgba(${13*gc|0},${9*gc|0},${6*gc|0},${alpha})`;
+  ctx.beginPath();
+  ctx.moveTo(-7,-18);ctx.lineTo(7,-18);
+  ctx.lineTo(10,26);ctx.lineTo(1,29);   // hem not level — one side lower
+  ctx.lineTo(-10,25);ctx.closePath();ctx.fill();
+
+  // Subtle coat crease (darker stripe down centre)
+  ctx.fillStyle=`rgba(${6*gc|0},${4*gc|0},${3*gc|0},${alpha*.55})`;
+  ctx.beginPath();ctx.moveTo(-1,-18);ctx.lineTo(1,-18);ctx.lineTo(1.5,28);ctx.lineTo(-1.5,28);ctx.closePath();ctx.fill();
+
+  // Head — slightly TOO SMALL for the body, slow oscillating tilt
+  const headTilt=isGhost?0.08:0.11+Math.sin(fr*.007)*0.08;
+  ctx.fillStyle=`rgba(${11*gc|0},${7*gc|0},${5*gc|0},${alpha})`;
+  ctx.save();ctx.rotate(headTilt);ctx.beginPath();ctx.arc(0,-24,7.2,0,Math.PI*2);ctx.fill();ctx.restore();
+
+  // Eyes — asymmetric height, one slightly larger — the wrong detail
+  if(alpha>.22){
+    const staring=F.stareTimer>0;
+    // During stare: eyes slightly brighter, one dilated
+    const ep=staring?(.22+Math.sin(fr*.08)*.06):(.08+Math.sin(fr*.025)*.04);
+    ctx.fillStyle=`rgba(238,226,210,${ep*alpha})`;
+    ctx.save();ctx.rotate(headTilt);
+    ctx.beginPath();
+    ctx.ellipse(-3.6,-24.5,staring?2.1:1.7,staring?1.4:1.0,0,0,Math.PI*2); // left eye
+    ctx.ellipse( 3.8,-23.2,staring?1.6:1.4,staring?1.1:0.85,-0.1,0,Math.PI*2); // right eye — lower, smaller
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Arms — hanging far too low, past where knees should be
+  ctx.fillStyle=`rgba(${10*gc|0},${7*gc|0},${5*gc|0},${alpha})`;
+  ctx.beginPath();ctx.moveTo(-7,0);ctx.lineTo(-14,4);ctx.lineTo(-13,33);ctx.lineTo(-9,33);ctx.lineTo(-8,0);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(7,0);ctx.lineTo(14,4);ctx.lineTo(13,33);ctx.lineTo(9,33);ctx.lineTo(8,0);ctx.closePath();ctx.fill();
+
+  // Fingers — too many joints, too long
+  ctx.strokeStyle=`rgba(${8*gc|0},${5*gc|0},${3*gc|0},${alpha*.9})`;ctx.lineWidth=1.3;ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(-11,33);ctx.lineTo(-12.5,41);
+  ctx.moveTo(-11,33);ctx.lineTo(-10,41.5);
+  ctx.moveTo(-11,33);ctx.lineTo(-8.5,40);
+  ctx.moveTo(11,33);ctx.lineTo(12.5,41);
+  ctx.moveTo(11,33);ctx.lineTo(10,41.5);
+  ctx.moveTo(11,33);ctx.lineTo(8.5,40);
+  ctx.stroke();
+
+  ctx.globalAlpha=1;ctx.restore();
+}
+
+function drwListener(sx,sy,op){
+  ctx.save();ctx.globalAlpha=Math.min(1,op);
+  // Shadow pool
+  ctx.fillStyle='rgba(80,0,120,0.18)';ctx.beginPath();ctx.ellipse(sx,sy+6,20,7,0,0,Math.PI*2);ctx.fill();
+  // Body — hunched, wider than Figure
+  const bc=ctx.createLinearGradient(sx-18,sy-40,sx+18,sy+8);
+  bc.addColorStop(0,'#1a0830');bc.addColorStop(1,'#0d0418');
+  ctx.fillStyle=bc;ctx.beginPath();ctx.ellipse(sx,sy-18,16,24,0,0,Math.PI*2);ctx.fill();
+  // Ear spikes
+  ctx.fillStyle='#2a1045';
+  ctx.beginPath();ctx.moveTo(sx-14,sy-30);ctx.lineTo(sx-28,sy-50);ctx.lineTo(sx-6,sy-34);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(sx+14,sy-30);ctx.lineTo(sx+28,sy-50);ctx.lineTo(sx+6,sy-34);ctx.closePath();ctx.fill();
+  // Inner ear glow
+  ctx.fillStyle='rgba(160,60,220,0.35)';
+  ctx.beginPath();ctx.moveTo(sx-15,sy-32);ctx.lineTo(sx-25,sy-47);ctx.lineTo(sx-9,sy-36);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(sx+15,sy-32);ctx.lineTo(sx+25,sy-47);ctx.lineTo(sx+9,sy-36);ctx.closePath();ctx.fill();
+  // Sensor "eyes" — dim reddish slits
+  const eyeA=LIS.state==='alerted'?0.90:0.30;
+  ctx.fillStyle=`rgba(200,40,255,${eyeA})`;
+  ctx.fillRect(sx-7,sy-26,5,2);ctx.fillRect(sx+2,sy-26,5,2);
+  // Alert pulse ring when hunting
+  if(LIS.state==='alerted'){
+    const pr=Math.sin(fr*.18)*.5+.5;
+    ctx.strokeStyle=`rgba(180,30,255,${pr*.35})`;ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(sx,sy-18,22+pr*6,0,Math.PI*2);ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// ── DRAW PLAYER ───────────────────────────────────────────────────────
+function drwPlayer(sx,sy){
+  ctx.save();ctx.translate(sx,sy);ctx.rotate(P.angle+Math.PI/2);
+  const bob=P.vx||P.vy?Math.sin(fr*.25)*1.5:0;
+  ctx.fillStyle='rgba(0,0,0,0.38)';ctx.beginPath();ctx.ellipse(2,2,9,13,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#231c13';ctx.beginPath();ctx.ellipse(0,5+bob,8,12,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#150e09';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,-5+bob);ctx.lineTo(0,8+bob);ctx.stroke();
+  ctx.fillStyle='#b28558';ctx.beginPath();ctx.arc(0,-6+bob,7,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#1c1209';ctx.beginPath();ctx.arc(0,-8+bob,7,Math.PI,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#110c05';ctx.beginPath();ctx.arc(-2.8,-7+bob,1.8,0,Math.PI*2);ctx.arc(2.8,-7+bob,1.8,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#231c13';ctx.lineWidth=5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-9,2+bob);ctx.lineTo(-13,10+bob);ctx.moveTo(9,2+bob);ctx.lineTo(13,10+bob);ctx.stroke();
+  ctx.restore();
+}
+
+// ── DRAW TAPES ────────────────────────────────────────────────────────
+function drwTapes(cx,cy){
+  tapes.forEach(t=>{
+    if(t.taken)return;const sx=t.x-cx,sy=t.y-cy;if(sx<-60||sx>W+60||sy<-60||sy>H+60)return;
+    const pulse=.55+.45*Math.sin(fr*.065);
+    if(LEVELS[lvlN].prelude){
+      // Draw a key icon
+      const g=ctx.createRadialGradient(sx,sy,0,sx,sy,22*pulse);
+      g.addColorStop(0,'rgba(200,175,60,0.32)');g.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=g;ctx.fillRect(sx-28,sy-28,56,56);
+      ctx.save();ctx.translate(sx,sy);ctx.rotate(Math.PI/6);
+      // Key bow (ring)
+      ctx.strokeStyle='rgba(210,178,55,0.92)';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(-5,0,7,0,Math.PI*2);ctx.stroke();
+      ctx.fillStyle='rgba(25,20,8,0.85)';ctx.beginPath();ctx.arc(-5,0,4,0,Math.PI*2);ctx.fill();
+      // Key shaft
+      ctx.fillStyle='rgba(210,178,55,0.92)';ctx.fillRect(0,-1.2,18,2.4);
+      // Key teeth
+      ctx.fillRect(10,1.2,3,4);ctx.fillRect(15,1.2,2.5,3);
+      ctx.restore();
+      ctx.fillStyle='rgba(210,178,55,0.68)';ctx.font='6px monospace';ctx.textAlign='center';ctx.fillText('KEY',sx,sy-16);
+      return;
+    }
+    const g=ctx.createRadialGradient(sx,sy,0,sx,sy,20*pulse);
+    g.addColorStop(0,t.special?'rgba(178,75,55,0.28)':'rgba(182,145,38,0.26)');g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g;ctx.fillRect(sx-26,sy-26,52,52);
+    ctx.fillStyle='#1c1411';ctx.fillRect(sx-16,sy-10,32,20);ctx.strokeStyle='#2c1f14';ctx.lineWidth=1;ctx.strokeRect(sx-16,sy-10,32,20);
+    ctx.fillStyle='#0c0907';ctx.fillRect(sx-8,sy-6,16,12);ctx.strokeStyle='#1a1410';ctx.lineWidth=.8;ctx.strokeRect(sx-8,sy-6,16,12);
+    ctx.strokeStyle='rgba(138,108,48,0.52)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(sx-3.5,sy,3,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(sx+3.5,sy,3,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle='rgba(148,108,38,0.42)';ctx.fillRect(sx-12,sy+4,24,4);
+    ctx.fillStyle=t.special?'rgba(198,108,78,0.78)':'rgba(208,172,72,0.7)';ctx.font='6px monospace';ctx.textAlign='center';ctx.fillText(t.special?'CORRUPTED':'EVIDENCE',sx,sy-13);
+  });
+}
+function drwDocs(cx,cy){
+  docs.forEach(d=>{
+    if(d.taken)return;const sx=d.x-cx,sy=d.y-cy;if(sx<-60||sx>W+60||sy<-60||sy>H+60)return;
+    const pulse=.5+.5*Math.sin(fr*.05);
+    const g=ctx.createRadialGradient(sx,sy,0,sx,sy,18*pulse);
+    g.addColorStop(0,'rgba(140,160,220,0.24)');g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g;ctx.fillRect(sx-24,sy-24,48,48);
+    ctx.fillStyle='rgba(200,210,235,0.75)';ctx.fillRect(sx-10,sy-13,20,16);
+    ctx.fillStyle='rgba(20,22,30,0.6)';ctx.fillRect(sx-7,sy-10,14,10);
+    for(let i=0;i<3;i++){ctx.fillStyle='rgba(160,170,200,0.45)';ctx.fillRect(sx-6,sy-9+i*3,12,1);}
+    ctx.fillStyle='rgba(160,180,230,0.72)';ctx.font='6px monospace';ctx.textAlign='center';ctx.fillText('DOC',sx,sy-16);
+  });
+}
+function drwBatts(cx,cy){
+  batteryPickups.forEach(b=>{
+    if(b.taken)return;const sx=b.x-cx,sy=b.y-cy;if(sx<-60||sx>W+60||sy<-60||sy>H+60)return;
+    const pulse=.5+.5*Math.sin(fr*.08);
+    const bg=ctx.createRadialGradient(sx,sy,0,sx,sy,20*pulse);
+    bg.addColorStop(0,'rgba(50,200,130,0.28)');bg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=bg;ctx.fillRect(sx-26,sy-26,52,52);
+    // Battery body
+    ctx.fillStyle='rgba(22,72,46,0.94)';ctx.fillRect(sx-11,sy-8,22,16);
+    ctx.strokeStyle='rgba(55,185,115,0.80)';ctx.lineWidth=1;ctx.strokeRect(sx-11,sy-8,22,16);
+    // Terminal nub
+    ctx.fillStyle='rgba(65,195,125,0.88)';ctx.fillRect(sx+11,sy-4,4,8);
+    // Charge cells
+    ctx.fillStyle='rgba(45,170,95,0.58)';
+    ctx.fillRect(sx-9,sy-5,5,10);ctx.fillRect(sx-3,sy-5,5,10);ctx.fillRect(sx+3,sy-5,5,10);
+    ctx.fillStyle='rgba(80,215,145,0.75)';ctx.font='6px monospace';ctx.textAlign='center';
+    ctx.fillText('BATTERY',sx,sy-13);
+  });
+}
+function drwKeycard(cx,cy){
+  if(!keycardItem||keycardItem.taken)return;
+  const sx=keycardItem.x-cx,sy=keycardItem.y-cy;if(sx<-60||sx>W+60||sy<-60||sy>H+60)return;
+  const pulse=.5+.5*Math.sin(fr*.1);
+  const bg=ctx.createRadialGradient(sx,sy,0,sx,sy,20*pulse);bg.addColorStop(0,'rgba(0,200,220,0.32)');bg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=bg;ctx.fillRect(sx-26,sy-26,52,52);
+  ctx.fillStyle='rgba(10,60,72,0.94)';ctx.fillRect(sx-12,sy-8,24,16);ctx.strokeStyle=`rgba(0,210,230,${.75+.2*pulse})`;ctx.lineWidth=1;ctx.strokeRect(sx-12,sy-8,24,16);
+  ctx.fillStyle='rgba(0,180,200,0.8)';ctx.fillRect(sx-10,sy-2,6,4);ctx.fillRect(sx,sy-2,6,4);
+  ctx.fillStyle=`rgba(0,220,240,${.7+.25*pulse})`;ctx.font='6px monospace';ctx.textAlign='center';ctx.fillText('KEYCARD',sx,sy-12);
+}
+function drwLockedDoor(cx,cy){
+  if(!LEVELS[lvlN]?.lockedRoom||lockedRoomOpen)return;
+  const lr=LEVELS[lvlN].lockedRoom;const sx=(lr.doorX+.5)*TILE-cx,sy=(lr.doorY+.5)*TILE-cy;
+  if(sx<-80||sx>W+80||sy<-80||sy>H+80)return;
+  const pulse=.5+.5*Math.sin(fr*.08);
+  ctx.fillStyle=`rgba(120,90,20,${.5+.2*pulse})`;ctx.fillRect(sx-8,sy-12,16,20);
+  ctx.strokeStyle=`rgba(190,150,30,${.65+.3*pulse})`;ctx.lineWidth=1.5;ctx.strokeRect(sx-8,sy-12,16,20);
+  ctx.strokeStyle=`rgba(190,150,30,${.5+.2*pulse})`;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(sx,sy-12,5,Math.PI,0);ctx.stroke();
+  ctx.fillStyle=`rgba(220,170,40,${.75+.2*pulse})`;ctx.fillRect(sx-2,sy-12,4,6);
+  if(Math.hypot(P.x-(lr.doorX+.5)*TILE,P.y-(lr.doorY+.5)*TILE)<TILE*1.8){ctx.fillStyle=keycardFound?`rgba(0,210,180,${.7+.25*pulse})`:`rgba(190,150,30,${.7+.2*pulse})`;ctx.font='7px monospace';ctx.textAlign='center';ctx.fillText(keycardFound?'[SPACE] OPEN':'LOCKED',sx,sy+16);}
+}
+function drwExit(cx,cy){
+  if(LEVELS[lvlN].prelude){
+    const sx=exitPos.x-cx,sy=exitPos.y-cy;
+    const hasKey=P.tapes>=tapesTotal;
+    const col=hasKey?'#55cc77':'#888855';
+    ctx.strokeStyle=col;ctx.lineWidth=2;ctx.strokeRect(sx-16,sy-26,32,52);
+    ctx.fillStyle=hasKey?'rgba(50,178,88,0.1)':'rgba(80,80,30,0.1)';ctx.fillRect(sx-16,sy-26,32,52);
+    ctx.fillStyle=col;ctx.font='bold 8px monospace';ctx.textAlign='center';
+    ctx.fillText(hasKey?'ENTER':'LOCKED',sx,sy+2);
+    if(!hasKey){ctx.fillStyle='rgba(145,145,80,0.5)';ctx.font='7px monospace';ctx.fillText('FIND KEY',sx,sy+12);}
+    return;
+  }
+  const sx=exitPos.x-cx,sy=exitPos.y-cy;
+  const allTapes=P.tapes>=tapesTotal;
+  const locked=exitLocked;
+  const col=allTapes&&!locked?'#55cc77':locked?'#cc3333':'#1c2a1c';
+  if(allTapes&&!locked){const g=ctx.createRadialGradient(sx,sy,0,sx,sy,28);g.addColorStop(0,'rgba(50,178,88,0.2)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(sx-35,sy-35,70,70);}
+  if(locked){const g=ctx.createRadialGradient(sx,sy,0,sx,sy,28);g.addColorStop(0,'rgba(180,40,40,0.22)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(sx-35,sy-35,70,70);}
+  ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.strokeRect(sx-14,sy-22,28,44);
+  ctx.fillStyle=allTapes&&!locked?'rgba(50,178,88,0.08)':locked?'rgba(180,40,40,0.1)':'rgba(20,38,20,0.08)';ctx.fillRect(sx-14,sy-22,28,44);
+  ctx.fillStyle=col;ctx.font='bold 9px monospace';ctx.textAlign='center';
+  ctx.fillText(allTapes&&!locked?'EXIT':locked?'DENY':'?',sx,sy+4);
+  if(!allTapes){ctx.fillStyle='rgba(145,145,145,0.3)';ctx.font='7px monospace';ctx.fillText(`${P.tapes}/${tapesTotal}`,sx,sy+14);}
+  if(locked){ctx.fillStyle='rgba(200,40,40,0.5)';ctx.font='7px monospace';ctx.fillText('TIMEOUT',sx,sy+14);}
+}
+function drwEnv(cx,cy){
+  envMarkers.forEach(m=>{
+    if(!m.active)return;const sx=m.x-cx,sy=m.y-cy;if(sx<-60||sx>W+60||sy<-60||sy>H+60)return;
+    const g=ctx.createRadialGradient(sx,sy,0,sx,sy,12);g.addColorStop(0,'rgba(32,2,2,0.42)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(sx-16,sy-16,32,32);
+    ctx.fillStyle='rgba(26,2,2,0.52)';ctx.beginPath();ctx.ellipse(sx,sy,7,4,-.35,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(sx+3,sy-5,2,3,.28,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(sx-3,sy-4,2,3,-.22,0,Math.PI*2);ctx.fill();
+  });
+}
+function drwSafeRoom(cx,cy){
+  if(!LEVELS[lvlN]||!LEVELS[lvlN].safeRoom)return;
+  const sr=LEVELS[lvlN].safeRoom;
+  const rx=sr.x1*TILE-cx,ry=sr.y1*TILE-cy;
+  const rw=(sr.x2-sr.x1+1)*TILE,rh=(sr.y2-sr.y1+1)*TILE;
+  const rcx=rx+rw/2,rcy=ry+rh/2;
+  const pulse=.5+.5*Math.sin(fr*.055);
+  const pulse2=.5+.5*Math.sin(fr*.055+Math.PI);
+  // Skip if entirely off screen
+  if(rx+rw<-60||rx>W+60||ry+rh<-60||ry>H+60)return;
+
+  // Outer ambient radial glow — large, soft, draws attention
+  const outerR=Math.max(rw,rh)*1.1;
+  const og=ctx.createRadialGradient(rcx,rcy,0,rcx,rcy,outerR);
+  og.addColorStop(0,`rgba(40,190,100,${(.18+.10*pulse)})`);
+  og.addColorStop(.55,`rgba(30,140,70,${(.08+.05*pulse)})`);
+  og.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=og;ctx.fillRect(rx-outerR*.3,ry-outerR*.3,rw+outerR*.6,rh+outerR*.6);
+
+  // Floor fill — visible green tint on every open tile
+  for(let ty=sr.y1;ty<=sr.y2;ty++)for(let tx=sr.x1;tx<=sr.x2;tx++){
+    if(MAP[ty]&&MAP[ty][tx]===0){
+      const fx=tx*TILE-cx,fy=ty*TILE-cy;
+      ctx.fillStyle=`rgba(28,90,48,${.28+.10*pulse})`;ctx.fillRect(fx,fy,TILE,TILE);
+    }
+  }
+
+  // Glowing border — two layered strokes, pulsing
+  ctx.strokeStyle=`rgba(55,210,110,${.55+.35*pulse})`;ctx.lineWidth=2;
+  ctx.strokeRect(rx,ry,rw,rh);
+  ctx.strokeStyle=`rgba(40,160,80,${.20+.15*pulse2})`;ctx.lineWidth=5;
+  ctx.strokeRect(rx,ry,rw,rh);
+
+  // Corner accent marks
+  const cs=10;
+  ctx.strokeStyle=`rgba(80,230,130,${.75+.20*pulse})`;ctx.lineWidth=2;
+  [[rx,ry],[rx+rw,ry],[rx,ry+rh],[rx+rw,ry+rh]].forEach(([cx2,cy2],i)=>{
+    const dx=i%2===0?1:-1,dy=i<2?1:-1;
+    ctx.beginPath();ctx.moveTo(cx2,cy2+dy*cs);ctx.lineTo(cx2,cy2);ctx.lineTo(cx2+dx*cs,cy2);ctx.stroke();
+  });
+
+  // Interior shimmer lines (horizontal scan lines drifting upward)
+  const shimY=((fr*.4)%rh);
+  ctx.fillStyle=`rgba(60,220,120,${.06+.04*pulse})`;
+  ctx.fillRect(rx+2,ry+shimY,rw-4,2);
+  ctx.fillRect(rx+2,ry+(shimY+rh/2)%rh,rw-4,1);
+
+  // "SAFE" label above the room
+  ctx.fillStyle=`rgba(80,230,130,${.70+.25*pulse})`;
+  ctx.font=`bold 9px monospace`;ctx.textAlign='center';
+  ctx.fillText('SAFE ROOM',rcx,ry-6);
+}
+
+// ── ANALOGUE OVERLAY ──────────────────────────────────────────────────
+function drwAnalogue(){
+  // Per-level VHS color grade
+  ctx.globalCompositeOperation='multiply';
+  ctx.fillStyle=gL()===0?'rgba(208,172,112,0.10)':gL()===1?'rgba(130,155,188,0.09)':'rgba(188,105,105,0.13)';
+  ctx.fillRect(0,0,W,H);ctx.globalCompositeOperation='source-over';
+  for(let i=0;i<95;i++){ctx.fillStyle=`rgba(255,238,198,${Math.random()*.046})`;ctx.fillRect(Math.random()*W,Math.random()*H,Math.random()*2+.3,Math.random()*2+.3);}
+  if(glitch>0){glitch--;if(Math.random()<.58){const gy=Math.random()*H,gh=Math.random()*15+3;ctx.fillStyle=`rgba(255,255,195,${Math.random()*.06})`;ctx.fillRect(0,gy,W,gh);if(Math.random()<.42){try{const id=ctx.getImageData(0,gy|0,W,gh|0+1);ctx.putImageData(id,(Math.random()-.5)*26,gy|0);}catch(e){}}}}
+  trackGlitch-=.5;if(Math.random()<.003||trackGlitch>0){if(trackGlitch<=0){trackGlitch=6+Math.random()*12;sfxStatic(.018,.18);}ctx.fillStyle=`rgba(182,162,122,${.048+Math.random()*.088})`;ctx.fillRect(0,Math.random()*H,W,Math.random()*5+2);}
+  ctx.drawImage(scanC,0,0);ctx.drawImage(vigC,0,0);
+  const s=fr%60,m=(fr/60|0)%60,h=(fr/3600|0)%24;
+  ctx.fillStyle='rgba(192,168,92,0.46)';ctx.font='10px monospace';ctx.textAlign='left';ctx.fillText(`REC 1994-11-07  ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`,10,H-7);
+  if(fr%60<44){ctx.fillStyle='rgba(215,44,44,0.7)';ctx.beginPath();ctx.arc(8,22,4,0,Math.PI*2);ctx.fill();}
+  ctx.fillStyle='rgba(215,44,44,0.5)';ctx.font='bold 10px monospace';ctx.textAlign='left';ctx.fillText('REC',16,26);
+  ctx.fillStyle='rgba(182,158,82,0.36)';ctx.font='9px monospace';ctx.textAlign='right';ctx.fillText(`CAM-0${lvlN+1}  ${LEVELS[lvlN].name}`,W-8,H-7);
+}
+
+// ── HUD ───────────────────────────────────────────────────────────────
+function drwHUD(){
+  const bar=(x,y,w,h,v,col,lbl)=>{ctx.fillStyle='rgba(0,0,0,0.65)';ctx.fillRect(x,y,w,h);ctx.fillStyle=col;ctx.fillRect(x+1,y+1,(v/100)*(w-2),h-2);ctx.fillStyle='rgba(192,168,86,0.46)';ctx.font='8px monospace';ctx.textAlign='left';ctx.fillText(lbl,x,y-2);};
+  // Left status panel background
+  ctx.fillStyle='rgba(0,0,0,0.45)';ctx.fillRect(8,14,168,64);
+  ctx.strokeStyle='rgba(155,130,55,0.20)';ctx.lineWidth=1;ctx.strokeRect(8,14,168,64);
+  bar(12,22,150,18,P.health,P.health>50?'#882020':'#cc2828','HEALTH');
+  bar(12,50,150,18,P.sanity,P.sanity>50?'#4e1e98':P.sanity>25?'#7230ba':'#aa3eec','SANITY');
+  // Percentage values
+  ctx.font='8px monospace';ctx.textAlign='right';
+  ctx.fillStyle='rgba(188,164,86,0.60)';ctx.fillText(Math.ceil(P.health)+'%',174,34);
+  ctx.fillStyle='rgba(188,164,86,0.60)';ctx.fillText(Math.ceil(P.sanity)+'%',174,62);
+  // Right status panel background
+  ctx.fillStyle='rgba(0,0,0,0.45)';ctx.fillRect(W-176,14,170,46);
+  ctx.strokeStyle='rgba(155,130,55,0.20)';ctx.lineWidth=1;ctx.strokeRect(W-176,14,170,46);
+  bar(W-168,22,156,18,P.battery,P.battery>25?'#988820':'#c87700','BATTERY [F]');
+  ctx.fillStyle='rgba(188,164,86,0.60)';ctx.font='8px monospace';ctx.textAlign='right';
+  ctx.fillText(Math.ceil(P.battery)+'%',W-6,34);
+  if(!LEVELS[lvlN].prelude){
+    ctx.font='7px monospace';ctx.textAlign='left';
+    ctx.fillStyle=P.batteryCount>0?'rgba(70,200,128,0.75)':'rgba(115,88,32,0.52)';
+    ctx.fillText(P.batteryCount>0?`SPARE: ${P.batteryCount}  [R]`:'NO SPARE  [R]',W-170,50);
+    // Big centered screen alert when battery is low
+    if(P.battery<20){
+      const wa=.5+.5*Math.sin(fr*.22);
+      const isCrit=P.battery<8;
+      // Darkened banner behind the text
+      ctx.fillStyle=isCrit?`rgba(80,0,0,${wa*.55})`:`rgba(60,40,0,${wa*.45})`;
+      ctx.fillRect(0,H/2-62,W,52);
+      ctx.strokeStyle=isCrit?`rgba(220,30,10,${wa*.7})`:`rgba(210,150,10,${wa*.6})`;
+      ctx.lineWidth=1;ctx.strokeRect(0,H/2-62,W,52);
+      // Main warning line
+      ctx.textAlign='center';
+      ctx.font=`bold 28px monospace`;
+      ctx.fillStyle=isCrit?`rgba(255,60,30,${wa})`:`rgba(240,180,20,${wa*.9})`;
+      ctx.fillText(isCrit?'!! BATTERY CRITICAL !!':'! LOW BATTERY !',W/2,H/2-38);
+      // Sub-line
+      ctx.font=`12px monospace`;
+      ctx.fillStyle=isCrit?`rgba(220,140,100,${wa*.85})`:`rgba(210,190,100,${wa*.75})`;
+      ctx.fillText(P.batteryCount>0?'PRESS  R  TO RECHARGE':'FIND A SPARE BATTERY',W/2,H/2-18);
+    }
+  }
+  if(LEVELS[lvlN]&&LEVELS[lvlN].useListener){
+    const nCol=noiseLevel>70?'#cc2828':noiseLevel>35?'#c87700':'#228844';
+    ctx.fillStyle='rgba(0,0,0,0.45)';ctx.fillRect(W-176,58,170,32);
+    ctx.strokeStyle='rgba(155,130,55,0.20)';ctx.lineWidth=1;ctx.strokeRect(W-176,58,170,32);
+    bar(W-168,66,156,14,noiseLevel,nCol,'NOISE');
+    ctx.fillStyle=`rgba(188,164,86,0.60)`;ctx.font='8px monospace';ctx.textAlign='right';
+    ctx.fillText(Math.ceil(noiseLevel)+'%',W-6,78);
+  }
+  if(P.sprinting||P.stamina<100){
+    ctx.fillStyle='rgba(0,0,0,0.42)';ctx.fillRect(8,82,130,22);
+    ctx.strokeStyle='rgba(40,110,130,0.28)';ctx.lineWidth=1;ctx.strokeRect(8,82,130,22);
+    bar(12,87,120,13,P.stamina,'#1a6575','STAMINA');
+  }
+  if(LEVELS[lvlN].prelude){
+    const hasKey=P.tapes>=tapesTotal;
+    ctx.fillStyle=hasKey?'rgba(68,188,88,.76)':'rgba(210,178,55,.76)';ctx.font='bold 11px monospace';ctx.textAlign='center';
+    ctx.fillText(hasKey?'MASTER KEY — RECOVERED':'MASTER KEY — NOT FOUND',W/2,24);
+  }else{
+    ctx.fillStyle=P.tapes>=tapesTotal?'rgba(68,188,88,.76)':'rgba(188,150,50,.76)';ctx.font='bold 11px monospace';ctx.textAlign='center';ctx.fillText(`EVIDENCE TAPES  ${P.tapes}/${tapesTotal}`,W/2,24);
+    if(LEVELS[lvlN].lockedRoom){ctx.font='7px monospace';ctx.fillStyle=lockedRoomOpen?'rgba(0,200,160,0.72)':keycardFound?'rgba(0,200,220,0.72)':'rgba(130,100,40,0.55)';ctx.fillText(lockedRoomOpen?'▣ RESTRICTED ROOM: OPEN':keycardFound?'▣ KEYCARD HELD — [SPACE] NEAR DOOR':'▣ KEYCARD NOT FOUND',W/2,34);}
+  }
+  if(collectedClues.length>0){
+    const sp=collectedClues.length<=4?72:58;const cpw=(collectedClues.length-1)*sp+48;
+    ctx.fillStyle='rgba(0,0,0,0.50)';ctx.fillRect(W/2-cpw/2-4,28,cpw+8,13);
+    collectedClues.forEach((cl,i)=>{ctx.fillStyle='rgba(118,188,118,0.68)';ctx.font='7px monospace';ctx.textAlign='center';ctx.fillText(cl,W/2+(i-(collectedClues.length-1)/2)*sp,38);});
+  }
+  if(msg&&fr-msgFr<320){
+    const a=Math.min(1,(fr-msgFr)/20)*Math.min(1,(320-(fr-msgFr))/30);
+    ctx.fillStyle=`rgba(0,0,0,${.82*a})`;ctx.fillRect(18,H-90,W-36,76);
+    ctx.strokeStyle=`rgba(182,146,48,${.5*a})`;ctx.lineWidth=1;ctx.strokeRect(18,H-90,W-36,76);
+    ctx.fillStyle=`rgba(188,150,48,${a})`;ctx.font='bold 9px monospace';ctx.textAlign='left';ctx.fillText('▶ RECOVERED AUDIO:',26,H-76);
+    ctx.fillStyle=`rgba(208,188,146,${a})`;ctx.font='11px monospace';
+    const words=msg.split(' ');let ln='',lines=[];for(const w of words){if((ln+w).length>78){lines.push(ln.trim());ln='';}ln+=w+' ';}if(ln.trim())lines.push(ln.trim());
+    lines.slice(0,4).forEach((l,i)=>ctx.fillText(l,26,H-61+i*13));
+  }
+  if(fr<260){ctx.fillStyle=`rgba(188,164,86,${.46*(1-fr/260)})`;ctx.font='10px monospace';ctx.textAlign='center';ctx.fillText('WASD · Mouse Aim · Shift Sprint · F Flashlight · R Recharge · N Field Notes · P Pause',W/2,H-6);}
+  ctx.strokeStyle='rgba(188,162,84,0.44)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(mX-9,mY);ctx.lineTo(mX-3,mY);ctx.moveTo(mX+3,mY);ctx.lineTo(mX+9,mY);ctx.moveTo(mX,mY-9);ctx.lineTo(mX,mY-3);ctx.moveTo(mX,mY+3);ctx.lineTo(mX,mY+9);ctx.stroke();
+  // Level name
+  if(LEVELS[lvlN]){
+    ctx.fillStyle='rgba(145,120,55,0.52)';ctx.font='8px monospace';ctx.textAlign='center';
+    ctx.fillText(LEVELS[lvlN].name,W/2,H-6);
+  }
+  // Safe room overstay penalty indicator
+  if(safeRoomPenalty>1.0){
+    const pa=.5+.5*Math.sin(fr*.14);
+    ctx.fillStyle=`rgba(210,80,20,${pa*.75})`;ctx.font='bold 8px monospace';ctx.textAlign='left';
+    ctx.fillText(`MONSTER STRENGTH  +${Math.round((safeRoomPenalty-1)*100)}%`,10,H-18);
+  }
+  // Safe room timer warning (when inside and about to trigger penalty)
+  if(inSafeRoom&&LEVELS[lvlN]?.safeRoom){
+    const penInterval=difficulty==='hard'?300:480;
+    const pct=Math.min(1,safeRoomTimer/penInterval);
+    const col=pct>.75?'rgba(220,60,20,0.72)':pct>.45?'rgba(200,150,20,0.60)':'rgba(80,180,100,0.55)';
+    ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(8,H-34,120,12);
+    ctx.fillStyle=col;ctx.fillRect(9,H-33,(118)*pct,10);
+    ctx.fillStyle='rgba(180,160,80,0.55)';ctx.font='7px monospace';ctx.textAlign='left';
+    ctx.fillText('SAFE TIME',10,H-38);
+  }
+}
+
+// ── INTRO STORY SLIDES ────────────────────────────────────────────────
+const INTRO_SLIDES=[
+  {
+    header:'RECEIVED: NOV 3, 1994 — 11:47 PM',
+    subheader:'FROM: [REDACTED]@anomalousresearch.gov  |  TO: s.harris@privateinvestigation.net',
+    body:[
+      'Subject: THE ALDRIC BUILDING — EYES ONLY',
+      '',
+      'Detective Harris,',
+      '',
+      'Forty-seven city workers disappeared from this building in 1987.',
+      'The official cause of death: gas leak.',
+      'The official record: sealed by government order.',
+      '',
+      'That is a lie.',
+      '',
+      'There are recordings inside. Documents. Evidence of what really happened.',
+      'What they were studying. What they found.',
+      '',
+      'You are the only person I trust to go in.',
+      'Go alone. Tell no one. Do not delay.',
+      '',
+      '— SENDER ID CORRUPTED —',
+    ],
+  },
+  {
+    header:'HARRIS — PRIVATE CASE NOTES',
+    subheader:'November 4, 1994 — 11:58 PM',
+    body:[
+      'Received an anonymous email tonight.',
+      'The sender address no longer exists. IP trace: dead end.',
+      '',
+      'Official record on the Aldric Building: gas leak, decommissioned.',
+      'Too clean. Sealed too fast.',
+      '',
+      'I have three open cases that trace back to that block.',
+      'No connection I can prove. But I feel it.',
+      '',
+      'This could be nothing.',
+      'Or it could be everything.',
+      '',
+      'Tomorrow. 3 AM. No backup.',
+      '',
+      '— S. Harris',
+    ],
+  },
+  {
+    header:'ALDRIC BUILDING — BLOCK 7',
+    subheader:'November 5, 1994 — 3:06 AM',
+    body:[
+      'Still raining.',
+      '',
+      'The guardhouse is unoccupied. The gate is unlocked.',
+      'There should be a security key inside.',
+      '',
+      'The building entrance is sealed.',
+      'Whatever is in there — it has been waiting seven years.',
+      '',
+      'I can hear the rain on the roof.',
+      'Something else, too. Hard to place.',
+      '',
+      'Somewhere in that building is the truth.',
+      'I am going in.',
+    ],
+  },
+];
+function drwIntro(){
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+  for(let i=0;i<60;i++){ctx.fillStyle=`rgba(192,168,126,${Math.random()*.032})`;ctx.fillRect(Math.random()*W,Math.random()*H,Math.random()*3+.4,Math.random()*2+.3);}
+  if(Math.random()<.06){ctx.fillStyle=`rgba(200,180,140,${.03+Math.random()*.04})`;ctx.fillRect(0,Math.random()*H,W,Math.random()*5+1);}
+  ctx.drawImage(scanC,0,0);
+  const sl=INTRO_SLIDES[introSlide];
+  const bx=W/2-310,by=60,bw=620,bh=H-120;
+  ctx.fillStyle='rgba(8,6,3,0.92)';ctx.fillRect(bx,by,bw,bh);
+  ctx.strokeStyle='rgba(182,148,50,0.55)';ctx.lineWidth=1;ctx.strokeRect(bx,by,bw,bh);
+  ctx.textAlign='left';
+  ctx.fillStyle='rgba(188,150,50,0.90)';ctx.font='bold 10px monospace';
+  ctx.fillText(sl.header,bx+20,by+22);
+  ctx.fillStyle='rgba(148,120,55,0.65)';ctx.font='9px monospace';
+  ctx.fillText(sl.subheader,bx+20,by+36);
+  ctx.strokeStyle='rgba(182,148,50,0.22)';ctx.beginPath();ctx.moveTo(bx+14,by+44);ctx.lineTo(bx+bw-14,by+44);ctx.stroke();
+  ctx.fillStyle='rgba(195,178,138,0.82)';ctx.font='11px monospace';
+  sl.body.forEach((l,i)=>ctx.fillText(l,bx+24,by+62+i*16));
+  // Slide counter and prompt
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(145,120,55,0.45)';ctx.font='8px monospace';
+  ctx.fillText(`${introSlide+1} / ${INTRO_SLIDES.length}`,W/2,H-28);
+  if(Math.sin(fr*.08)>0){ctx.fillStyle='rgba(188,160,70,0.65)';ctx.font='10px monospace';ctx.fillText('▶ CLICK OR SPACE TO CONTINUE ◀',W/2,H-14);}
+}
+
+// ── TITLE ─────────────────────────────────────────────────────────────
+function drwTitle(){
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+  for(let i=0;i<155;i++){ctx.fillStyle=`rgba(192,168,126,${Math.random()*.044})`;ctx.fillRect(Math.random()*W,Math.random()*H,Math.random()*3+.4,Math.random()*2+.3);}
+  if(Math.random()<.1){ctx.fillStyle=`rgba(202,182,140,${.048+Math.random()*.068})`;ctx.fillRect(0,Math.random()*H,W,Math.random()*8+2);}
+  ctx.drawImage(vigC,0,0);ctx.drawImage(scanC,0,0);
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(182,148,46,0.1)';ctx.fillRect(W/2-360,H*.4-72,720,72);ctx.strokeStyle='rgba(182,148,46,0.26)';ctx.lineWidth=1;ctx.strokeRect(W/2-360,H*.4-72,720,72);
+  ctx.fillStyle='rgba(188,150,50,0.8)';ctx.font='bold 10px monospace';ctx.fillText('▌ CLASSIFIED — DEPT. OF ANOMALOUS RESEARCH — EYES ONLY ▐',W/2,H*.4-48);
+  ctx.fillStyle='rgba(218,196,136,0.9)';ctx.font='bold 50px monospace';ctx.fillText('CASE FILE 1994',W/2,H*.4-8);
+  ctx.fillStyle='rgba(150,120,66,0.7)';ctx.font='14px monospace';ctx.fillText('YOU ARE DETECTIVE HARRIS — PRIVATE INVESTIGATOR',W/2,H*.4+22);
+  ctx.fillStyle='rgba(0,0,0,0.76)';ctx.fillRect(W/2-248,H*.4+42,496,90);ctx.strokeStyle='rgba(155,126,50,0.26)';ctx.lineWidth=1;ctx.strokeRect(W/2-248,H*.4+42,496,90);
+  ctx.fillStyle='rgba(188,166,102,0.68)';ctx.font='11px monospace';
+  ['MISSION: Infiltrate the Aldric Building, Block 7.','47 city workers disappeared there in 1987.','Case buried by government order.','Something is still inside. Find all evidence tapes.','Understand what happened here.'].forEach((l,i)=>ctx.fillText(l,W/2,H*.4+58+i*14));
+  if(Math.sin(fr*.05)>0){ctx.fillStyle='rgba(188,160,70,0.78)';ctx.font='12px monospace';ctx.fillText('▶  CLICK OR PRESS SPACE TO BEGIN  ◀',W/2,H-25);}
+  if(fr%60<44){ctx.fillStyle='rgba(215,44,44,0.7)';ctx.beginPath();ctx.arc(8,22,4,0,Math.PI*2);ctx.fill();}
+  ctx.fillStyle='rgba(215,44,44,0.5)';ctx.font='bold 10px monospace';ctx.textAlign='left';ctx.fillText('REC',16,26);
+  ctx.fillStyle='rgba(188,160,76,0.36)';ctx.font='9px monospace';ctx.fillText('REC 1994-11-07  00:00:00',12,H-8);
+  // Credits — bottom right
+  ctx.textAlign='right';
+  ctx.fillStyle='rgba(168,140,62,0.82)';ctx.font='bold 11px monospace';
+  ctx.fillText('Created and Developed by  Ale Espinoza',W-14,H-22);
+  ctx.fillStyle='rgba(148,124,58,0.62)';ctx.font='10px monospace';
+  ctx.fillText('Special Thanks — Vanessa Baldueza',W-14,H-8);
+  // Bottom bar hints
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(155,128,50,0.70)';ctx.font='bold 11px monospace';
+  ctx.fillText('[ S ]  SETTINGS          [ N ]  FIELD NOTES',W/2,H-8);
+}
+function drwNotes(){
+  ctx.fillStyle='rgba(0,0,0,0.92)';ctx.fillRect(0,0,W,H);
+  for(let i=0;i<80;i++){ctx.fillStyle=`rgba(160,185,220,${Math.random()*.025})`;ctx.fillRect(Math.random()*W,Math.random()*H,Math.random()*3+.4,1);}
+  ctx.drawImage(scanC,0,0);
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(155,175,218,0.88)';ctx.font='bold 16px monospace';ctx.fillText('FIELD NOTES',W/2,38);
+  ctx.strokeStyle='rgba(120,145,195,0.25)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(W/2-160,50);ctx.lineTo(W/2+160,50);ctx.stroke();
+  if(collectedDocs.length===0){
+    ctx.fillStyle='rgba(120,140,180,0.45)';ctx.font='11px monospace';
+    ctx.fillText('No field notes collected yet.',W/2,H/2-10);
+    ctx.fillStyle='rgba(90,110,150,0.35)';ctx.font='9px monospace';
+    ctx.fillText('Find glowing documents inside the building.',W/2,H/2+10);
+  } else {
+    const colW=Math.floor(W/collectedDocs.length)-20;
+    collectedDocs.forEach((doc,di)=>{
+      const bx=20+di*(colW+14),bw=colW,by=62,bh=H-100;
+      ctx.fillStyle='rgba(10,14,22,0.80)';ctx.fillRect(bx,by,bw,bh);
+      ctx.strokeStyle='rgba(120,148,200,0.28)';ctx.lineWidth=1;ctx.strokeRect(bx,by,bw,bh);
+      ctx.fillStyle='rgba(155,178,228,0.82)';ctx.font='bold 9px monospace';ctx.textAlign='center';
+      ctx.fillText(doc.title,bx+bw/2,by+14);
+      ctx.fillStyle='rgba(100,120,170,0.50)';ctx.font='7px monospace';
+      ctx.fillText(doc.level,bx+bw/2,by+25);
+      ctx.strokeStyle='rgba(110,135,185,0.18)';ctx.beginPath();ctx.moveTo(bx+10,by+30);ctx.lineTo(bx+bw-10,by+30);ctx.stroke();
+      ctx.fillStyle='rgba(175,188,218,0.75)';ctx.font='9px monospace';ctx.textAlign='left';
+      doc.lines.forEach((l,li)=>{ctx.fillText(l,bx+10,by+44+li*13);});
+    });
+  }
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(120,145,190,0.52)';ctx.font='9px monospace';
+  ctx.fillText('[ N ]  or  [ ESC ]  to close',W/2,H-10);
+}
+function drwSettings(){
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+  for(let i=0;i<100;i++){ctx.fillStyle=`rgba(192,168,126,${Math.random()*.03})`;ctx.fillRect(Math.random()*W,Math.random()*H,Math.random()*3+.4,1);}
+  ctx.drawImage(scanC,0,0);
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(188,150,50,0.88)';ctx.font='bold 22px monospace';ctx.fillText('SETTINGS',W/2,H*.22);
+  ctx.strokeStyle='rgba(155,125,45,0.28)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(W/2-140,H*.22+14);ctx.lineTo(W/2+140,H*.22+14);ctx.stroke();
+  // Difficulty
+  ctx.fillStyle='rgba(160,135,60,0.7)';ctx.font='11px monospace';ctx.fillText('DIFFICULTY',W/2,H*.38);
+  const opts=[['EASY','rgba(80,160,80,0.8)'],['NORMAL','rgba(188,160,70,0.8)'],['HARD','rgba(188,60,60,0.8)']];
+  opts.forEach(([label,col],i)=>{
+    const bx=W/2-180+i*120,by=H*.42-14,bw=100,bh=28;
+    const sel=difficulty===label.toLowerCase();
+    ctx.fillStyle=sel?col.replace(/[\d.]+\)$/,'0.18)'):'rgba(20,18,12,0.6)';ctx.fillRect(bx,by,bw,bh);
+    ctx.strokeStyle=sel?col:'rgba(100,85,40,0.3)';ctx.lineWidth=sel?1.5:1;ctx.strokeRect(bx,by,bw,bh);
+    ctx.fillStyle=sel?col:'rgba(130,110,50,0.5)';ctx.font=`${sel?'bold ':''}10px monospace`;ctx.fillText(label,bx+bw/2,by+18);
+  });
+  // Difficulty description panel
+  const descData={
+    easy:{
+      border:'rgba(80,160,80,0.30)',
+      title:'EASY MODE — WARNING',
+      titleCol:'rgba(90,170,90,0.88)',
+      lines:[
+        'Harris did not run from shadows. Neither should you.',
+        '',
+        'Figure speed: REDUCED 30%',
+        'Cipher timer: DOUBLED (6 minutes)',
+        '',
+        'It will ruin the experience. You will feel nothing.',
+        'This is not recommended. You have been warned.',
+      ],
+      lineCol:'rgba(140,195,140,0.72)',
+    },
+    normal:{
+      border:'rgba(188,160,50,0.30)',
+      title:'NORMAL MODE — AS INTENDED',
+      titleCol:'rgba(200,170,70,0.90)',
+      lines:[
+        'This is the recommended experience.',
+        '',
+        'Figure speed: STANDARD',
+        'Cipher timer: 3 minutes',
+        'Stamina, battery and sanity behave as designed.',
+        '',
+        'Harris had no backup. You should not need one either.',
+      ],
+      lineCol:'rgba(195,168,100,0.72)',
+    },
+    hard:{
+      border:'rgba(188,60,60,0.35)',
+      title:'HARD MODE — YOU ASKED FOR THIS',
+      titleCol:'rgba(210,70,70,0.90)',
+      lines:[
+        'The building does not forgive hesitation.',
+        '',
+        'Figure speed: INCREASED 30%',
+        'Cipher timer: HALVED (90 seconds)',
+        '',
+        'Think fast. Move faster.',
+        'The Figure does not wait.',
+      ],
+      lineCol:'rgba(210,130,130,0.72)',
+    },
+  };
+  const desc=descData[difficulty];
+  if(desc){
+    const ph=H*.52,pw=580,px2=W/2-pw/2;
+    ctx.fillStyle='rgba(0,0,0,0.88)';ctx.fillRect(px2,ph-8,pw,112);
+    ctx.strokeStyle=desc.border;ctx.lineWidth=1;ctx.strokeRect(px2,ph-8,pw,112);
+    ctx.fillStyle=desc.titleCol;ctx.font='bold 10px monospace';ctx.fillText(desc.title,W/2,ph+10);
+    ctx.fillStyle=desc.lineCol;ctx.font='9px monospace';
+    desc.lines.forEach((l,i)=>ctx.fillText(l,W/2,ph+26+i*12));
+  }
+  // Back
+  ctx.fillStyle='rgba(145,120,50,0.55)';ctx.font='10px monospace';
+  ctx.fillText('[ ESC ]  BACK',W/2,H-22);
+  // Difficulty applied text
+  ctx.fillStyle='rgba(100,85,40,0.42)';ctx.font='8px monospace';
+  ctx.fillText(`CURRENT: ${difficulty.toUpperCase()}`,W/2,H*.78);
+}
+function drwTransition(){
+  const el=fr-transFr,a=Math.min(1,el/28);ctx.fillStyle=`rgba(0,0,0,${a})`;ctx.fillRect(0,0,W,H);if(el<38)return;
+  for(let i=0;i<108;i++){ctx.fillStyle=`rgba(192,168,126,${Math.random()*.062})`;ctx.fillRect(Math.random()*W,Math.random()*H,Math.random()*4+1,Math.random()*2+.4);}
+  const NL=LEVELS[lvlN+1];ctx.textAlign='center';
+  ctx.fillStyle='rgba(182,146,50,0.6)';ctx.font='10px monospace';ctx.fillText('◆ EVIDENCE SECURED ◆',W/2,H/2-65);
+  ctx.fillStyle='rgba(216,192,128,0.88)';ctx.font='bold 26px monospace';ctx.fillText(NL.name,W/2,H/2-22);
+  ctx.fillStyle='rgba(162,136,70,0.66)';ctx.font='italic 14px monospace';ctx.fillText(NL.subtitle,W/2,H/2+10);
+  if(el>82&&Math.sin(fr*.09)>0){ctx.fillStyle='rgba(188,160,70,0.7)';ctx.font='11px monospace';ctx.fillText('▶ CLICK OR SPACE TO CONTINUE ◀',W/2,H-28);}
+  ctx.drawImage(scanC,0,0);
+}
+function drwDead(){
+  const el=fr-deadFr;
+  const a=Math.min(1,el/52);ctx.fillStyle=`rgba(0,0,0,${a})`;ctx.fillRect(0,0,W,H);
+  // Brief distorted figure — not a screaming face. Just standing there. Too close.
+  if(el>=38&&el<=41){
+    // First flash: figure very close, slightly to the side, facing away
+    const savedAngle=F.angle;F.angle=Math.PI*.15;
+    drwFigure(W/2-18,H/2-18,.55,false);F.angle=savedAngle;
+    ctx.fillStyle='rgba(255,255,255,0.04)';ctx.fillRect(0,0,W,H);
+  }
+  if(el>=56&&el<=58){
+    // Second flash: closer, slightly different position
+    drwFigure(W/2+6,H/2-10,.62,false);
+    ctx.fillStyle='rgba(255,0,0,0.02)';ctx.fillRect(0,0,W,H);
+  }
+  if(el>=70&&el<=71){
+    // Third flash: dead center, facing the camera directly
+    const savedAngle=F.angle;F.angle=0;
+    drwFigure(W/2,H/2-20,.44,false);F.angle=savedAngle;
+  }
+  if(el<78)return;
+  for(let i=0;i<75;i++){ctx.fillStyle=`rgba(182,4,4,${Math.random()*.036})`;ctx.fillRect(Math.random()*W,Math.random()*H,Math.random()*3+1,1);}
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(142,0,0,0.9)';ctx.font='bold 56px monospace';ctx.fillText('LOST',W/2,H/2-38);
+  ctx.fillStyle='rgba(145,115,68,0.72)';ctx.font='12px monospace';
+  [
+    'Harris never filed a report.',
+    'No one knew he had entered the building.',
+    '',
+    'The anonymous tip came three weeks before.',
+    'The voice on the recording was his own.',
+    '',
+    'He was not sent there.',
+    'He was called there.',
+  ].forEach((l,i)=>ctx.fillText(l,W/2,H/2-4+i*16));
+  if(Math.sin(fr*.07)>0){ctx.fillStyle='rgba(188,160,70,0.6)';ctx.font='11px monospace';ctx.fillText('▶ CLICK OR SPACE TO TRY AGAIN ◀',W/2,H/2+142);}
+  ctx.drawImage(scanC,0,0);
+}
+function drwWin(){
+  const el=fr-winFr,a=Math.min(1,el/62);ctx.fillStyle=`rgba(0,0,0,${a*.92})`;ctx.fillRect(0,0,W,H);if(el<52)return;
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(162,216,106,0.85)';ctx.font='bold 32px monospace';ctx.fillText('CASE FILE CLOSED',W/2,H/2-112);
+  ctx.fillStyle='rgba(145,185,90,0.55)';ctx.font='11px monospace';
+  [
+    '"The transmitter. I destroyed it. The frequency stopped."',
+    '"I pray that is enough."',
+    '— Det. Harris   Nov. 7, 1994',
+    '',
+    '─────────────────────────────────────────',
+    'DEPT. OF ANOMALOUS RESEARCH — INTERNAL NOTE [RESTRICTED]',
+    '',
+    'Harris was not assigned to this investigation.',
+    'Harris received an anonymous tip. Caller: unidentified.',
+    'Voice pattern on tip recording: matches no known individual.',
+    'Harris has no memory of receiving the tip.',
+    'No record of who convinced him to enter the building.',
+    '',
+    'The Aldric Building was demolished. May 1995.',
+    'No transmitter was found.',
+    '',
+    '[ CASE FILE — SEALED INDEFINITELY ]',
+  ].forEach((l,i)=>ctx.fillText(l,W/2,H/2-76+i*15));
+  if(Math.sin(fr*.07)>0){ctx.fillStyle='rgba(188,160,70,0.6)';ctx.font='11px monospace';ctx.fillText('▶ CLICK OR SPACE TO RETURN TO TITLE ◀',W/2,H-12);}
+  ctx.drawImage(scanC,0,0);
+}
+function drwCredits(){
+  ctx.fillStyle='rgba(0,0,0,0.92)';ctx.fillRect(0,0,W,H);
+  ctx.drawImage(scanC,0,0);
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(68,128,68,0.65)';ctx.font='10px monospace';ctx.fillText('[ CASE FILE CLOSED ]',W/2,H*.18);
+  ctx.fillStyle='rgba(188,160,70,0.82)';ctx.font='bold 18px monospace';ctx.fillText('CASE  FILE  1994',W/2,H*.28);
+  ctx.strokeStyle='rgba(155,125,45,0.25)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(W/2-160,H*.32);ctx.lineTo(W/2+160,H*.32);ctx.stroke();
+  const lines=[
+    ['Created and Developed by','rgba(188,158,68,0.90)','bold 11px'],
+    ['Ale Espinoza','rgba(220,196,120,0.95)','bold 14px'],
+    ['','','9px'],
+    ['Special Thanks','rgba(155,130,58,0.72)','11px'],
+    ['Vanessa Baldueza','rgba(188,170,120,0.82)','12px'],
+    ['for helping me out.','rgba(145,125,70,0.60)','9px'],
+    ['','','9px'],
+    ['Built with HTML5 Canvas & Web Audio API','rgba(100,88,50,0.50)','8px monospace'],
+    ['"Something is still inside."','rgba(88,110,88,0.48)','italic 9px'],
+  ];
+  lines.forEach(([txt,col,font],i)=>{
+    ctx.fillStyle=col;ctx.font=font+' monospace';
+    ctx.fillText(txt,W/2,H*.40+i*20);
+  });
+  if(Math.sin(fr*.04)>0){ctx.fillStyle='rgba(145,120,50,0.52)';ctx.font='9px monospace';ctx.fillText('CLICK OR SPACE TO RETURN TO TITLE',W/2,H-18);}
+}
+
+// ── EVIDENCE DISPLAY OVERLAY — shown on tape pickup for 15s ───────────
+function drwEvidence(){
+  if(!evidenceActive||gs!=='playing')return;
+  const bw=520,bh=340,bx=W/2-260,by=H/2-170;
+  ctx.fillStyle='rgba(0,0,0,0.82)';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='rgba(8,6,3,0.97)';ctx.fillRect(bx,by,bw,bh);
+  ctx.strokeStyle='rgba(182,148,50,0.70)';ctx.lineWidth=1.5;ctx.strokeRect(bx,by,bw,bh);
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(188,150,50,0.90)';ctx.font='bold 11px monospace';
+  ctx.fillText('▶ EVIDENCE RECOVERED — CIPHER CLUES FOUND',W/2,by+22);
+  ctx.strokeStyle='rgba(182,148,50,0.22)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(bx+14,by+32);ctx.lineTo(bx+bw-14,by+32);ctx.stroke();
+  const rawMsg=evidenceMsg.replace(/^▶ TAPE \d+.*? — /,'');
+  ctx.fillStyle='rgba(178,148,90,0.70)';ctx.font='9px monospace';ctx.fillText('FIELD RECORDING:',W/2,by+48);
+  ctx.fillStyle='rgba(200,180,140,0.78)';ctx.font='italic 10px monospace';
+  const wds=rawMsg.split(' ');let ln='',lns=[];
+  for(const w of wds){if((ln+w).length>60){lns.push(ln.trim());ln='';}ln+=w+' ';}if(ln.trim())lns.push(ln.trim());
+  lns.slice(0,2).forEach((l,i)=>ctx.fillText(l,W/2,by+62+i*13));
+  ctx.strokeStyle='rgba(182,148,50,0.22)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(bx+14,by+94);ctx.lineTo(bx+bw-14,by+94);ctx.stroke();
+  ctx.fillStyle='rgba(138,208,138,0.90)';ctx.font='bold 11px monospace';
+  ctx.fillText('NEW CIPHER CLUES:',W/2,by+112);
+  const perRow=3;const evRows=[];
+  for(let i=0;i<evidenceClues.length;i+=perRow)evRows.push(evidenceClues.slice(i,i+perRow));
+  evRows.forEach((row,ri)=>{row.forEach((cl,ci)=>{
+    const cx2=W/2+(ci-(row.length-1)/2)*100,cy2=by+122+ri*52;
+    ctx.fillStyle='rgba(18,28,18,0.90)';ctx.fillRect(cx2-38,cy2,76,36);
+    ctx.strokeStyle='rgba(88,188,88,0.55)';ctx.lineWidth=1;ctx.strokeRect(cx2-38,cy2,76,36);
+    ctx.fillStyle='rgba(138,218,138,0.95)';ctx.font='bold 20px monospace';ctx.fillText(cl,cx2,cy2+24);
+  });});
+  const tp=evidenceTimer/900;
+  ctx.fillStyle='rgba(0,0,0,0.55)';ctx.fillRect(bx+20,by+bh-40,bw-40,10);
+  ctx.fillStyle=tp>.5?'rgba(60,148,60,0.82)':tp>.25?'rgba(188,148,30,0.82)':'rgba(188,40,40,0.82)';
+  ctx.fillRect(bx+20,by+bh-40,(bw-40)*tp,10);
+  ctx.strokeStyle='rgba(182,148,50,0.28)';ctx.strokeRect(bx+20,by+bh-40,bw-40,10);
+  ctx.fillStyle='rgba(188,160,70,0.65)';ctx.font='9px monospace';
+  ctx.fillText('[ ENTER ] TO RESUME  —  AUTO IN '+Math.ceil(evidenceTimer/60)+'s',W/2,by+bh-22);
+  ctx.fillStyle='rgba(148,128,80,0.55)';ctx.font='7px monospace';
+  ctx.fillText('MEMORIZE THESE CLUES — YOU WILL NEED THEM AT THE EXIT',W/2,by+bh-8);
+  ctx.drawImage(scanC,0,0);
+}
+
+// ── EXIT CIPHER PUZZLE — 3 minutes to decode the word ─────────────────
+function drwExitPuzzle(){
+  if(!exitPuzzleActive||gs!=='playing')return;
+  const bw=560,bh=280,bx=W/2-280,by=H/2-140;
+  ctx.fillStyle='rgba(0,0,0,0.88)';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='rgba(6,4,2,0.97)';ctx.fillRect(bx,by,bw,bh);
+  const wFlash=exitWrongFlash>0&&exitWrongFlash%4<2;
+  ctx.strokeStyle=exitPuzzleResult==='correct'?'rgba(70,195,70,0.75)':wFlash?'rgba(200,40,40,0.90)':'rgba(182,148,50,0.65)';
+  ctx.lineWidth=1.5;ctx.strokeRect(bx,by,bw,bh);
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(188,150,50,0.90)';ctx.font='bold 11px monospace';
+  ctx.fillText('▶ EXIT CIPHER — USE YOUR CLUES TO DECODE',W/2,by+20);
+  ctx.strokeStyle='rgba(182,148,50,0.22)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(bx+14,by+30);ctx.lineTo(bx+bw-14,by+30);ctx.stroke();
+  const enc=LEVELS[lvlN].encodedWord,clen=enc.length;
+  enc.split('').forEach((ch,i)=>{
+    const ex2=W/2+(i-(clen-1)/2)*64;
+    const fl=wFlash;
+    ctx.fillStyle=fl?'rgba(60,8,8,0.9)':'rgba(22,16,6,0.9)';ctx.fillRect(ex2-24,by+44,48,36);
+    ctx.strokeStyle=fl?'rgba(200,40,40,0.8)':'rgba(188,148,50,0.55)';ctx.lineWidth=1;ctx.strokeRect(ex2-24,by+44,48,36);
+    ctx.fillStyle=fl?'rgba(218,80,80,0.95)':'rgba(218,182,78,0.95)';ctx.font='bold 22px monospace';
+    ctx.fillText(ch,ex2,by+68);
+    const dec=clueMap[ch];
+    ctx.fillStyle=dec?'rgba(128,198,128,0.88)':'rgba(100,60,60,0.6)';ctx.font='bold 10px monospace';
+    ctx.fillText(dec?`${ch}=${dec}`:'?',ex2,by+92);
+    const inputCh=exitPuzzleInput[i]||'',cur=i===exitPuzzleInput.length&&fr%60<36;
+    ctx.fillStyle=inputCh?'rgba(18,38,18,0.9)':'rgba(8,12,8,0.9)';ctx.fillRect(ex2-24,by+100,48,36);
+    ctx.strokeStyle=inputCh?'rgba(80,180,80,0.55)':'rgba(40,68,40,0.3)';ctx.lineWidth=1;ctx.strokeRect(ex2-24,by+100,48,36);
+    ctx.fillStyle=inputCh?'rgba(128,218,128,0.95)':cur?'rgba(218,218,128,0.8)':'rgba(40,58,40,0.5)';
+    ctx.font='bold 22px monospace';ctx.fillText(inputCh||(cur?'▮':'_'),ex2,by+124);
+  });
+  ctx.strokeStyle='rgba(182,148,50,0.18)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(bx+14,by+148);ctx.lineTo(bx+bw-14,by+148);ctx.stroke();
+  if(exitPuzzleResult===null){
+    const maxT=difficulty==='easy'?21600:difficulty==='hard'?5400:10800;const tp=exitPuzzleTimer/maxT;
+    ctx.fillStyle='rgba(0,0,0,0.55)';ctx.fillRect(bx+20,by+158,bw-40,10);
+    ctx.fillStyle=tp>.5?'rgba(70,155,70,0.82)':tp>.2?'rgba(195,155,35,0.82)':'rgba(195,45,45,0.82)';
+    ctx.fillRect(bx+20,by+158,(bw-40)*tp,10);
+    ctx.strokeStyle='rgba(182,148,50,0.28)';ctx.strokeRect(bx+20,by+158,bw-40,10);
+    const secs=Math.ceil(exitPuzzleTimer/60),mm=Math.floor(secs/60),ss=(secs%60).toString().padStart(2,'0');
+    ctx.fillStyle='rgba(188,160,70,0.65)';ctx.font='9px monospace';ctx.fillText(`${mm}:${ss} REMAINING`,W/2,by+178);
+    ctx.fillStyle='rgba(188,70,70,0.70)';ctx.font='8px monospace';
+    ctx.fillText('WARNING: THE FIGURE IS STILL MOVING',W/2,by+192);
+  }
+  if(exitPuzzleResult==='correct'){ctx.fillStyle='rgba(70,210,70,0.95)';ctx.font='bold 16px monospace';ctx.fillText('✓  ACCESS GRANTED',W/2,by+bh-18);}
+  ctx.drawImage(scanC,0,0);
+}
+
+// ── MAIN LOOP ─────────────────────────────────────────────────────────
+function loop(){
+  fr++;
+  ambT++;if(ambT>=192){ambT=0;if(A.state==='running')tickAmb();}
+  if(gs==='playing'&&!paused){
+    updPlayer();
+    if(!evidenceActive){updFigure();updListener();updGhost();updPhantom();updEnv();updParts();updRain();updThunder();updNoise();}
+    else{updParts();}
+    camX=Math.max(0,Math.min(MCOLS*TILE-W,P.x-W/2));
+    camY=Math.max(0,Math.min(MROWS*TILE-H,P.y-H/2));
+    if(shk>0){skx=(Math.random()-.5)*shk*2;sky=(Math.random()-.5)*shk*2;shk*=.78;if(shk<.16){shk=0;skx=0;sky=0;}}
+  }
+  if(gs==='intro'){drwIntro();requestAnimationFrame(loop);return;}
+  if(gs==='settings'){drwSettings();requestAnimationFrame(loop);return;}
+  if(gs==='title'){drwTitle();requestAnimationFrame(loop);return;}
+  if(gs==='transition'){drwTransition();requestAnimationFrame(loop);return;}
+  ctx.save();if(shk>0)ctx.translate(skx,sky);
+  ctx.fillStyle='#0d0a07';ctx.fillRect(0,0,W,H);
+  if(mapCache)ctx.drawImage(mapCache,-camX,-camY);
+  drwSafeRoom(camX,camY);drwEnv(camX,camY);drwTapes(camX,camY);drwDocs(camX,camY);drwBatts(camX,camY);drwKeycard(camX,camY);drwLockedDoor(camX,camY);drwExit(camX,camY);
+  // VHS ghost: 1-2 frame flash of a figure that isn't there (not on Listener levels)
+  if(ghostFr>0&&!LEVELS[lvlN]?.useListener){ghostFr--;drwFigure(ghostX-camX,ghostY-camY,.18+Math.random()*.1,true);ctx.fillStyle='rgba(205,195,178,0.03)';ctx.fillRect(ghostX-camX-30,ghostY-camY-40,60,80);}
+  // The figure (only on non-Listener levels)
+  if(F.opacity>.02&&!LEVELS[lvlN]?.useListener){const fsx=F.x-camX,fsy=F.y-camY;if(fsx>-60&&fsx<W+60&&fsy>-60&&fsy<H+60)drwFigure(fsx,fsy,F.opacity,false);}
+  if(LEVELS[lvlN]&&LEVELS[lvlN].useListener&&LIS.opacity>.02){const lsx=LIS.x-camX,lsy=LIS.y-camY;if(lsx>-60&&lsx<W+60&&lsy>-60&&lsy<H+60)drwListener(lsx,lsy,LIS.opacity);}
+  drwPlayer(P.x-camX,P.y-camY);drwParts(camX,camY);
+  drwRain();
+  if(lightningFlash>0){lightningFlash--;ctx.fillStyle=`rgba(210,225,255,${lightningFlash*.07})`;ctx.fillRect(0,0,W,H);}
+  drawLight(P.x-camX,P.y-camY,P.angle,P.battery,P.flashOn);
+  // Sanity distortion
+  const sf=1-P.sanity/100;
+  if(sf>.18){const sv=ctx.createRadialGradient(W/2,H/2,W*.12,W/2,H/2,W*.76);sv.addColorStop(0,'rgba(0,0,0,0)');sv.addColorStop(1,`rgba(${14+sf*40|0},0,0,${sf*.54})`);ctx.fillStyle=sv;ctx.fillRect(0,0,W,H);if(sf>.5&&Math.random()<sf*.32){ctx.fillStyle=`rgba(172,0,0,${sf*.048})`;for(let n=0;n<4;n++)ctx.fillRect(0,Math.random()*H,W,2);}}
+  // Red proximity warning — intensifies as the figure closes in (not on Listener levels)
+  if(!LEVELS[lvlN]?.useListener){
+    const figDist=Math.hypot(P.x-F.x,P.y-F.y);
+    if(F.state!=='absent'&&F.opacity>.1&&figDist<TILE*5.5){
+      const prox=Math.pow(1-figDist/(TILE*5.5),1.5);
+      const pg=ctx.createRadialGradient(W/2,H/2,W*.15,W/2,H/2,W*.72);
+      pg.addColorStop(0,'rgba(0,0,0,0)');pg.addColorStop(1,`rgba(180,0,0,${(prox*.5).toFixed(3)})`);
+      ctx.fillStyle=pg;ctx.fillRect(0,0,W,H);
+    }
+  }
+  if(LEVELS[lvlN]&&LEVELS[lvlN].useListener&&LIS.state==='alerted'){
+    const lisDist=Math.hypot(P.x-LIS.x,P.y-LIS.y);
+    if(lisDist<TILE*6){
+      const prox2=Math.pow(1-lisDist/(TILE*6),1.5);
+      const pg2=ctx.createRadialGradient(W/2,H/2,W*.15,W/2,H/2,W*.72);
+      pg2.addColorStop(0,'rgba(0,0,0,0)');pg2.addColorStop(1,`rgba(120,0,200,${(prox2*.45).toFixed(3)})`);
+      ctx.fillStyle=pg2;ctx.fillRect(0,0,W,H);
+    }
+  }
+  if(gs!=='dead'&&gs!=='win'){drwAnalogue();drwHUD();drwEvidence();drwExitPuzzle();}
+  if(paused){
+    ctx.fillStyle='rgba(0,0,0,0.62)';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='rgba(188,160,70,0.92)';ctx.font='bold 28px monospace';ctx.textAlign='center';
+    ctx.fillText('PAUSED',W/2,H/2-12);
+    ctx.fillStyle='rgba(145,120,55,0.68)';ctx.font='10px monospace';
+    ctx.fillText('PRESS  P  OR  ESC  TO  RESUME',W/2,H/2+14);
+  }
+  if(notesOpen)drwNotes();
+  ctx.restore();
+  // Dead/Win drawn AFTER restore — no camera shake offset can create gaps
+  if(gs==='dead')drwDead();
+  if(gs==='win'){drwWin();if(creditsActive)drwCredits();}
+  c.style.cursor=gs==='playing'?'none':'default';
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
