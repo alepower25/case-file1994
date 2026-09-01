@@ -631,6 +631,7 @@ document.addEventListener('keydown',e=>{
   if(e.key.toLowerCase()==='r'&&gs==='playing'&&!paused){rechargeFlash();return;}
   if(e.key==='s'||e.key==='S'){if(gs==='title'){gs='settings';settingsInsultShown=false;}return;}
   if(e.key==='n'||e.key==='N'){if(!notesOpen)notesSelIdx=0;notesOpen=!notesOpen;return;}
+  if(notesOpen&&(e.key==='ArrowDown'||e.key==='ArrowUp')){notesSelIdx=(notesSelIdx+(e.key==='ArrowDown'?1:-1)+collectedDocs.length)%collectedDocs.length;e.preventDefault?.();return;}
   if(gs==='settings'){
     if(e.key==='Escape'){gs='title';return;}
     if(e.key==='1'){difficulty='veryeasy';settingsInsultShown=true;return;}
@@ -1677,8 +1678,8 @@ function drwAnalogue(){
   ctx.globalCompositeOperation='source-over';ctx.globalAlpha=0.12;ctx.drawImage(caC,0,0);ctx.globalAlpha=1;
   const s=fr%60,m=(fr/60|0)%60,h=(fr/3600|0)%24;
   ctx.fillStyle='rgba(192,168,92,0.46)';ctx.font='10px monospace';ctx.textAlign='left';ctx.fillText(`REC 1994-11-07  ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`,10,H-7);
-  if(fr%60<44){ctx.fillStyle='rgba(215,44,44,0.7)';ctx.beginPath();ctx.arc(8,22,4,0,Math.PI*2);ctx.fill();}
-  ctx.fillStyle='rgba(215,44,44,0.5)';ctx.font='bold 10px monospace';ctx.textAlign='left';ctx.fillText('REC',16,26);
+  if(fr%60<44){ctx.fillStyle='rgba(215,44,44,0.7)';ctx.beginPath();ctx.arc(8,8,3.5,0,Math.PI*2);ctx.fill();}
+  ctx.fillStyle='rgba(215,44,44,0.5)';ctx.font='bold 10px monospace';ctx.textAlign='left';ctx.fillText('REC',16,12);
   ctx.fillStyle='rgba(182,158,82,0.36)';ctx.font='9px monospace';ctx.textAlign='right';ctx.fillText(`CAM-0${lvlN+1}  ${LEVELS[lvlN].name}`,W-8,H-7);
 }
 
@@ -2041,7 +2042,7 @@ function drwNotes(){
   ctx.strokeStyle='rgba(120,140,195,0.28)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,hdrH);ctx.lineTo(W,hdrH);ctx.stroke();
   ctx.textAlign='center';
   ctx.fillStyle='rgba(162,178,230,0.92)';ctx.font='bold 14px monospace';ctx.fillText('FIELD NOTES',W/2,23);
-  ctx.textAlign='right';ctx.fillStyle='rgba(100,118,170,0.55)';ctx.font='9px monospace';ctx.fillText('[ N ]  or  [ ESC ]  to close',W-12,23);
+  ctx.textAlign='right';ctx.fillStyle='rgba(100,118,170,0.55)';ctx.font='9px monospace';ctx.fillText('[ ↑ ↓ ]  navigate    [ N / ESC ]  close',W-12,23);
   if(collectedDocs.length===0){
     ctx.textAlign='center';
     ctx.fillStyle='rgba(100,120,170,0.45)';ctx.font='11px monospace';ctx.fillText('No field notes collected yet.',W/2,H/2-10);
