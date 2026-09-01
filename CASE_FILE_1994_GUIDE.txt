@@ -27,6 +27,7 @@
 
   MOVE ................. W / A / S / D  or  Arrow Keys
   SPRINT ............... Hold SHIFT  (drains Stamina)
+  SNEAK ................ Hold C  (slower movement, very low noise)
   FLASHLIGHT ........... F  (drains Battery, restores Sanity)
   FIELD NOTES .......... N  (view collected lore documents)
   ADVANCE / INTERACT ... SPACE  or  Left Click
@@ -517,6 +518,27 @@
     not where you are now. You can use this to mislead it.
   - Standing completely still will eventually cause it to
     lose interest and return to patrol.
+
+  SNEAK MODE  (hold C while moving):
+
+  - Moves at 62% of walk speed.
+  - Generates almost no noise: 0.28 per frame vs 1.2 for walking.
+  - USE IT when the Listener is nearby and you must still move.
+
+  THE TWIST -- INVOLUNTARY BREATH:
+    While sneaking, Harris cannot hold his breath forever.
+    Every 3 to 6 seconds, an involuntary exhale creates a
+    noise spike of +7 to +15.
+    You cannot prevent it. You cannot time it.
+    On NORMAL, most spikes will not alert the Listener if your
+    noise level is already low.
+    On HARD and INSANE, every breath can get you caught.
+
+    The HUD shows "[C] SNEAKING" while active.
+    When the label turns orange and flashes -- a breath is
+    imminent. Consider stopping entirely and letting it pass.
+
+    Sneak is not silence. It is near-silence with a cost.
 
 
 ------------------------------------------------------------------

@@ -404,6 +404,10 @@ function sfxStatic(v=.07,d=.35){try{const buf=A.createBuffer(1,A.sampleRate*d,A.
 function sfxBreathing(){try{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sine';o.frequency.setValueAtTime(95,A.currentTime);o.frequency.linearRampToValueAtTime(128,A.currentTime+1.8);o.frequency.linearRampToValueAtTime(95,A.currentTime+3.4);g.gain.setValueAtTime(.0001,A.currentTime);g.gain.linearRampToValueAtTime(.05,A.currentTime+.7);g.gain.linearRampToValueAtTime(.05,A.currentTime+2.7);g.gain.linearRampToValueAtTime(.0001,A.currentTime+3.4);o.start();o.stop(A.currentTime+3.5);}catch(e){}}
 // Phantom footstep — no entity made it
 function sfxPhantomStep(){tone(55+Math.random()*15,.09,'sawtooth',.024);}
+// Involuntary sneak breath — player exhales while holding still-ish
+function sfxSneakBreath(){try{const len=Math.floor(A.sampleRate*.28),buf=A.createBuffer(1,len,A.sampleRate),d=buf.getChannelData(0);for(let i=0;i<len;i++){const t=i/A.sampleRate;const env=t<.04?t/.04:Math.exp(-(t-.04)*11);d[i]=(Math.random()*2-1)*env*.4;}const s=A.createBufferSource(),g=A.createGain(),lp=A.createBiquadFilter();lp.type='lowpass';lp.frequency.value=700;lp.Q.value=1.2;s.buffer=buf;s.connect(lp);lp.connect(g);g.connect(mg);g.gain.value=.055;s.start();}catch(e){}}
+// Very soft sneak footstep
+function sfxSneakStep(){tone(52+Math.random()*12,.05,'sawtooth',.012);}
 // Whisper — barely audible speech-like sound
 function sfxWhisper(){try{[0,.26,.48,.76,1.02].forEach(t=>{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sawtooth';o.frequency.setValueAtTime(138+Math.random()*55,A.currentTime+t);o.frequency.linearRampToValueAtTime(175+Math.random()*70,A.currentTime+t+.2);g.gain.setValueAtTime(.0001,A.currentTime+t);g.gain.linearRampToValueAtTime(.024,A.currentTime+t+.05);g.gain.exponentialRampToValueAtTime(.0001,A.currentTime+t+.25);o.start(A.currentTime+t);o.stop(A.currentTime+t+.28);});}catch(e){}}
 // Distant door slam — makes you think someone else is in the building
@@ -467,6 +471,7 @@ function updNoise(){
   const moving=Math.abs(P.vx)>.05||Math.abs(P.vy)>.05;
   const nMult=difficulty==='veryeasy'?.35:difficulty==='godmode'?0:difficulty==='insane'?1.5:1;
   if(P.sprinting)noiseLevel=Math.min(100,noiseLevel+5*nMult);
+  else if(P.sneaking&&moving)noiseLevel=Math.min(100,noiseLevel+.28*nMult);
   else if(moving)noiseLevel=Math.min(100,noiseLevel+1.2*nMult);
   else noiseLevel=Math.max(0,noiseLevel-2.5);
 }
@@ -675,14 +680,14 @@ let noirMusicStarted=false;let titleMusicStarted=false;
 let evidenceActive=false,evidenceTimer=0,evidenceClues=[],evidenceMsg='';
 let exitPuzzleActive=false,exitPuzzleInput='',exitPuzzleTimer=0,exitPuzzleResult=null,exitPuzzleResultTimer=0,exitWrongFlash=0,exitLocked=false;
 let batteryPickups=[];let battWarnFlash=0;
-let keycardFound=false;let lockedRoomOpen=false;let lockedRoomDoc=null;let keycardItem=null;let scriptedDone=new Set();let creakCooldown=0;let visitedTileMap=new Map();let figLearnTarget=null;let figLearnCd=0;
+let sneakBreathTimer=0;let keycardFound=false;let lockedRoomOpen=false;let lockedRoomDoc=null;let keycardItem=null;let scriptedDone=new Set();let creakCooldown=0;let visitedTileMap=new Map();let figLearnTarget=null;let figLearnCd=0;
 let godModeUnlocked=localStorage.getItem('godModeUnlocked')==='1';let checkpoint=null;let checkpointUsesLeft=0;let checkpointFlash=0;
 let safeRoomPenalty=1.0;let safeRoomTimer=0;let inSafeRoom=false;let safeRoomNotified=false;
 
 // ── ENTITIES ──────────────────────────────────────────────────────────
 const P={x:0,y:0,vx:0,vy:0,angle:0,radius:10,speed:1.55,
   health:100,sanity:100,battery:100,batteryCount:0,stamina:100,
-  sprinting:false,flashOn:true,stepT:0,tapes:0};
+  sprinting:false,sneaking:false,flashOn:true,stepT:0,tapes:0};
 
 // The Figure — not a monster. A person. Standing still.
 const F={x:0,y:0,angle:0,radius:12,
@@ -806,7 +811,7 @@ function loadLevel(n){
   phantomTimer=200+Math.random()*200;
   exitLocked=false;collectedClues=[];clueMap={};evidenceActive=false;evidenceTimer=0;exitPuzzleActive=false;exitPuzzleResult=null;exitPuzzleInput='';noiseLevel=0;
   safeRoomPenalty=1.0;safeRoomTimer=0;inSafeRoom=false;safeRoomNotified=false;
-  keycardFound=false;lockedRoomOpen=false;lockedRoomDoc=null;keycardItem=null;scriptedDone=new Set();visitedTileMap=new Map();figLearnTarget=null;figLearnCd=0;creakCooldown=0;checkpoint=null;checkpointUsesLeft=difficulty==='insane'?2:0;checkpointFlash=0;
+  keycardFound=false;lockedRoomOpen=false;lockedRoomDoc=null;keycardItem=null;scriptedDone=new Set();visitedTileMap=new Map();figLearnTarget=null;figLearnCd=0;creakCooldown=0;checkpoint=null;checkpointUsesLeft=difficulty==='insane'?2:0;checkpointFlash=0;sneakBreathTimer=0;P.sneaking=false;
   if(!LEVELS[n].prelude&&LEVELS[n].lockedRoom){const lr=LEVELS[n].lockedRoom;keycardItem={x:(lr.keyX+.5)*TILE,y:(lr.keyY+.5)*TILE,taken:false};}
   if(n===0){initRain();startNoirMusic();}
   else{noirMusicStarted=false;if(n===1){bgMusicStarted=false;startBGMusic();}}
@@ -1083,14 +1088,28 @@ function updPlayer(){
   let dx=0,dy=0;
   if(K['w']||K['arrowup'])dy-=1;if(K['s']||K['arrowdown'])dy+=1;
   if(K['a']||K['arrowleft'])dx-=1;if(K['d']||K['arrowright'])dx+=1;
-  P.sprinting=!!(K['shift']&&P.stamina>0&&(dx||dy));
-  const spd=P.sprinting?P.speed*1.45:P.speed;
+  P.sprinting=!!(K['shift']&&P.stamina>0&&(dx||dy)&&!K['c']);
+  P.sneaking=!!(K['c']&&(dx||dy)&&!P.sprinting);
+  const spd=P.sprinting?P.speed*1.45:P.sneaking?P.speed*.62:P.speed;
   if(dx||dy){
     const l=Math.sqrt(dx*dx+dy*dy);P.vx=dx/l*spd;P.vy=dy/l*spd;
-    P.stepT--;if(P.stepT<=0){sfxStep();dust(P.x,P.y);P.stepT=P.sprinting?10:20;}
+    P.stepT--;
+    if(P.stepT<=0){
+      if(P.sneaking){sfxSneakStep();P.stepT=32;}
+      else{sfxStep();dust(P.x,P.y);P.stepT=P.sprinting?10:20;}
+    }
     if(P.sprinting)P.stamina=Math.max(0,P.stamina-.52);
     else P.stamina=Math.min(100,P.stamina+.06);
-  } else {P.vx=0;P.vy=0;P.stamina=Math.min(100,P.stamina+.22);}
+  } else {P.vx=0;P.vy=0;P.sneaking=false;P.stamina=Math.min(100,P.stamina+.22);}
+  // Sneak breath: involuntary noise spike while sneaking on Listener levels
+  if(LEVELS[lvlN]?.useListener&&P.sneaking&&difficulty!=='godmode'){
+    if(sneakBreathTimer<=0){sneakBreathTimer=200+Math.random()*180;}
+    sneakBreathTimer--;
+    if(sneakBreathTimer===0){
+      const spike=7+Math.random()*8;noiseLevel=Math.min(100,noiseLevel+spike);
+      sfxSneakBreath();
+    }
+  } else if(!P.sneaking){sneakBreathTimer=0;}
   if(P.stamina<=0&&!staminaExhausted){
     staminaExhausted=true;
     try{const buf=A.createBuffer(1,Math.floor(A.sampleRate*.4),A.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++){const t=i/A.sampleRate;d[i]=(Math.random()*2-1)*(t<.05?t/.05:Math.exp(-(t-.05)*5))*.55;}const s=A.createBufferSource(),g=A.createGain(),bp=A.createBiquadFilter();bp.type='bandpass';bp.frequency.value=800;bp.Q.value=2;s.buffer=buf;s.connect(bp);bp.connect(g);g.connect(mg);g.gain.value=.22;s.start();}catch(e){}
@@ -1617,11 +1636,20 @@ function drwHUD(){
   }
   if(LEVELS[lvlN]&&LEVELS[lvlN].useListener){
     const nCol=noiseLevel>70?'#cc2828':noiseLevel>35?'#c87700':'#228844';
-    ctx.fillStyle='rgba(0,0,0,0.45)';ctx.fillRect(W-176,58,170,32);
-    ctx.strokeStyle='rgba(155,130,55,0.20)';ctx.lineWidth=1;ctx.strokeRect(W-176,58,170,32);
+    const sneakPanelH=P.sneaking?46:32;
+    ctx.fillStyle='rgba(0,0,0,0.45)';ctx.fillRect(W-176,58,170,sneakPanelH);
+    ctx.strokeStyle='rgba(155,130,55,0.20)';ctx.lineWidth=1;ctx.strokeRect(W-176,58,170,sneakPanelH);
     bar(W-168,66,156,14,noiseLevel,nCol,'NOISE');
     ctx.fillStyle=`rgba(188,164,86,0.60)`;ctx.font='8px monospace';ctx.textAlign='right';
     ctx.fillText(Math.ceil(noiseLevel)+'%',W-6,78);
+    if(P.sneaking){
+      const breathPct=sneakBreathTimer>0?sneakBreathTimer/380:1;
+      const breathWarn=breathPct<0.18;
+      const sa=breathWarn?.5+.5*Math.sin(fr*.28):1;
+      ctx.fillStyle=breathWarn?`rgba(220,120,20,${sa*.8})`:'rgba(0,200,150,0.80)';
+      ctx.font='7px monospace';ctx.textAlign='center';
+      ctx.fillText(breathWarn?'! BREATH — hold still !':'[C] SNEAKING  ·  quiet movement',W-88,92);
+    }
   }
   if(P.sprinting||P.stamina<100){
     ctx.fillStyle='rgba(0,0,0,0.42)';ctx.fillRect(8,82,130,22);
