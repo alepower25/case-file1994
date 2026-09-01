@@ -2427,9 +2427,6 @@ function drwExitPuzzle(){
     ctx.strokeStyle=fl?'rgba(200,40,40,0.8)':'rgba(188,148,50,0.55)';ctx.lineWidth=1;ctx.strokeRect(ex2-24,by+44,48,36);
     ctx.fillStyle=fl?'rgba(218,80,80,0.95)':'rgba(218,182,78,0.95)';ctx.font='bold 22px monospace';
     ctx.fillText(ch,ex2,by+68);
-    const dec=clueMap[ch];
-    ctx.fillStyle=dec?'rgba(128,198,128,0.88)':'rgba(100,60,60,0.6)';ctx.font='bold 10px monospace';
-    ctx.fillText(dec?`${ch}=${dec}`:'?',ex2,by+92);
     const inputCh=exitPuzzleInput[i]||'',cur=i===exitPuzzleInput.length&&fr%60<36;
     ctx.fillStyle=inputCh?'rgba(18,38,18,0.9)':'rgba(8,12,8,0.9)';ctx.fillRect(ex2-24,by+100,48,36);
     ctx.strokeStyle=inputCh?'rgba(80,180,80,0.55)':'rgba(40,68,40,0.3)';ctx.lineWidth=1;ctx.strokeRect(ex2-24,by+100,48,36);
