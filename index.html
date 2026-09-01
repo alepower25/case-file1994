@@ -1963,9 +1963,9 @@ function drwTitle(){
   // Credits — bottom right
   ctx.textAlign='right';
   ctx.fillStyle='rgba(168,140,62,0.85)';ctx.font='bold 11px monospace';
-  ctx.fillText('Created and Developed by  Ale Espinoza',W-14,H-22);
-  ctx.fillStyle='rgba(148,124,58,0.65)';ctx.font='10px monospace';
-  ctx.fillText('Special Thanks — Vanessa Baldueza',W-14,H-8);
+  ctx.fillText('Created and Developed by',W-14,H-22);
+  ctx.fillStyle='rgba(168,140,62,0.85)';ctx.font='bold 11px monospace';
+  ctx.fillText('Ale Espinoza & Vanessa Baldueza',W-14,H-8);
   // Bottom bar hints
   ctx.textAlign='center';
   ctx.fillStyle='rgba(155,128,50,0.72)';ctx.font='bold 11px monospace';
@@ -2353,13 +2353,7 @@ function drwCredits(){
   ctx.strokeStyle='rgba(155,125,45,0.25)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(W/2-160,H*.32);ctx.lineTo(W/2+160,H*.32);ctx.stroke();
   const lines=[
     ['Created and Developed by','rgba(188,158,68,0.90)','bold 11px'],
-    ['Ale Espinoza','rgba(220,196,120,0.95)','bold 14px'],
-    ['','','9px'],
-    ['Special Thanks','rgba(155,130,58,0.72)','11px'],
-    ['Vanessa Baldueza','rgba(188,170,120,0.82)','12px'],
-    ['for helping me out.','rgba(145,125,70,0.60)','9px'],
-    ['','','9px'],
-    ['Built with HTML5 Canvas & Web Audio API','rgba(100,88,50,0.50)','8px monospace'],
+    ['Ale Espinoza & Vanessa Baldueza','rgba(225,200,124,0.96)','bold 15px'],
     ['"Something is still inside."','rgba(88,110,88,0.48)','italic 9px'],
   ];
   lines.forEach(([txt,col,font],i)=>{
