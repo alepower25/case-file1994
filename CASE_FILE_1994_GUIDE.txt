@@ -34,6 +34,11 @@
   PAUSE ................ P  or  ESC
   SETTINGS ............. S  (from title screen only)
 
+  NOTE: A HELP SCREEN showing all controls appears the first
+  time you begin the game. Press SPACE, ESC, or click to dismiss.
+  It will not appear again (stored locally). To reset: clear
+  your browser's local storage for this page.
+
 
   OBJECTIVE:
     Explore each level and collect all evidence tapes (or the key).
@@ -561,6 +566,31 @@
     Use corridors and doorways to create safe pockets of darkness.
     Monsters outside your beam cannot be seen.
     This works in your favor -- and against it.
+
+  VHS GLITCH EFFECTS  (INTRO / TITLE / HELP SCREENS)
+    Tracking error bands drift across the screen.
+    Horizontal desync flashes simulate tape damage.
+    Color fringe echo overlaid on title text.
+    REC counter in the corner timestamps the footage.
+    These are purely aesthetic. The footage is from 1994.
+
+  ANIMATED ENVIRONMENT
+    The building is alive -- or something inside it is.
+
+    WALL DRIPS
+      Moisture seeps down wall-adjacent tiles throughout the
+      building. Small animated water streaks appear near walls
+      and reset as they reach the floor.
+
+    LIGHT FLICKER PATCHES
+      On open floor areas, dying overhead lights create subtle
+      pulsing brightness patches on the floor. The frequency
+      and phase differ per patch -- some flicker fast, some slow.
+
+    INDOOR RAIN BLEEDING  (Levels 1, 2, 3 only)
+      On upper-level areas, faint rain streaks fall through
+      broken ceiling tiles. The rain outside bleeds in.
+      The structural integrity of the building is compromised.
 
 
 ------------------------------------------------------------------
