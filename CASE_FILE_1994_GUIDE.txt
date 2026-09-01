@@ -221,12 +221,15 @@
   Color tone  : Rainy night exterior
 
   OBJECTIVE:
-    Find the MASTER KEY inside the guardhouse
-    (small structure in the upper-left of the map).
-    Walk to the building entrance at the bottom.
+    Find the MASTER KEY inside the guardhouse.
+    The guardhouse is the small walled structure in the
+    upper-left corner of the map.
+    Enter through the bottom opening and pick up the key.
+    Walk to the building entrance at the bottom of the map.
 
   ANSWER:
-    Pick up the KEY  >>  walk into the green ENTER doorway.
+    Pick up the KEY inside the guardhouse  >>  walk into
+    the green ENTER doorway at the bottom.
     No cipher. No monster. Take your time.
 
 
@@ -514,6 +517,28 @@
     not where you are now. You can use this to mislead it.
   - Standing completely still will eventually cause it to
     lose interest and return to patrol.
+
+
+------------------------------------------------------------------
+  VISUAL NOTES
+------------------------------------------------------------------
+
+  All footage is rendered as a degraded VHS recording from 1994.
+
+  FILM GRAIN
+    Persistent analog noise across all footage.
+    Refreshes every other frame. Intentional.
+
+  CHROMATIC ABERRATION
+    Color fringing visible at screen edges (red left, cyan right).
+    Simulates lens distortion on the original camera unit.
+
+  SHADOW CASTING
+    The flashlight does not pass through walls.
+    Light is blocked by any solid structure.
+    Use corridors and doorways to create safe pockets of darkness.
+    Monsters outside your beam cannot be seen.
+    This works in your favor -- and against it.
 
 
 ------------------------------------------------------------------
