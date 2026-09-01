@@ -1944,7 +1944,7 @@ function drwSettings(){
   ctx.fillText(`CURRENT: ${difficulty.toUpperCase()}`,W/2,H*.84);
 }
 function drwMiniMap(){
-  const tw=4,th=4,mw=MCOLS*tw,mh=MROWS*th,mx=W-mw-10,my=10;
+  const tw=4,th=4,mw=MCOLS*tw,mh=MROWS*th,mx=W-mw-10,my=H-mh-14;
   ctx.fillStyle='rgba(0,0,0,0.78)';ctx.fillRect(mx-3,my-3,mw+6,mh+6);
   ctx.strokeStyle='rgba(100,160,80,0.45)';ctx.lineWidth=1;ctx.strokeRect(mx-3,my-3,mw+6,mh+6);
   for(let ty=0;ty<MROWS;ty++)for(let tx=0;tx<MCOLS;tx++){
@@ -1961,7 +1961,7 @@ function drwMiniMap(){
   tapes.forEach(t=>{if(!t.taken){const ttx=Math.floor(t.x/TILE),tty=Math.floor(t.y/TILE);ctx.fillStyle='rgba(255,200,60,0.8)';ctx.fillRect(mx+ttx*tw+1,my+tty*th+1,tw-1,th-1);}});
   const px=Math.floor(P.x/TILE),py=Math.floor(P.y/TILE);
   ctx.fillStyle='rgba(255,255,180,1)';ctx.fillRect(mx+px*tw+1,my+py*th+1,tw-2,th-2);
-  ctx.fillStyle='rgba(80,160,60,0.5)';ctx.font='6px monospace';ctx.textAlign='right';ctx.fillText('MAP',mx+mw,my+mh+9);ctx.textAlign='center';
+  ctx.fillStyle='rgba(80,160,60,0.5)';ctx.font='6px monospace';ctx.textAlign='right';ctx.fillText('MAP',mx+mw,my-5);ctx.textAlign='center';
 }
 function drwCheckpointFlash(){
   if(checkpointFlash<=0)return;
