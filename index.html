@@ -2328,20 +2328,22 @@ function drwWin(){
     '"I pray that is enough."',
     '— Det. Harris   Nov. 7, 1994',
     '',
+    'Audio log recovered from Level 5. Harris was not.',
+    '',
     '─────────────────────────────────────────',
     'DEPT. OF ANOMALOUS RESEARCH — INTERNAL NOTE [RESTRICTED]',
     '',
     'Harris was not assigned to this investigation.',
-    'Harris received an anonymous tip. Caller: unidentified.',
-    'Voice pattern on tip recording: matches no known individual.',
-    'Harris has no memory of receiving the tip.',
-    'No record of who convinced him to enter the building.',
+    'STATUS: MISSING — NOVEMBER 14, 1994.',
+    'Last confirmed location: Aldric Building, Level 5.',
     '',
     'The Aldric Building was demolished. May 1995.',
-    'No transmitter was found.',
+    'No transmitter was found. No body was recovered.',
+    '',
+    'Forty-eight people entered the Aldric Building. None came out.',
     '',
     '[ CASE FILE — SEALED INDEFINITELY ]',
-  ].forEach((l,i)=>ctx.fillText(l,W/2,H/2-76+i*15));
+  ].forEach((l,i)=>ctx.fillText(l,W/2,H/2-88+i*15));
   if(Math.sin(fr*.07)>0){ctx.fillStyle='rgba(188,160,70,0.6)';ctx.font='11px monospace';ctx.fillText('▶ CLICK OR SPACE TO RETURN TO TITLE ◀',W/2,H-12);}
   ctx.drawImage(scanC,0,0);
 }

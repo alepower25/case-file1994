@@ -748,19 +748,38 @@ document_block(
 chapter_opener('VIII', 'November 7, 1994', '"I pray that is enough."')
 
 body(
-    'Harris exited the Aldric Building on November 7, 1994 — two days after '
-    'entry. His final recorded statement, recovered from a personal audio device '
-    'found near the building\'s south exit, reads as follows:'
+    'The last known audio recording attributed to Detective S. Harris was '
+    'recovered from a personal device found inside the Aldric Building — '
+    'Level 5, Containment Core — on November 9, 1994, by a Department '
+    'retrieval team. Harris himself was not found.'
 )
 
 note_block(
-    'HARRIS — AUDIO LOG  |  NOVEMBER 7, 1994',
+    'HARRIS — AUDIO LOG  |  NOVEMBER 7, 1994  |  FINAL RECORDING',
     [
         '"The transmitter. I destroyed it. The frequency stopped."',
         '',
         '"I pray that is enough."',
+        '',
+        '[Recording ends. Duration: 0:09. No further entries.]',
     ],
     sig='Det. Harris   Nov. 7, 1994'
+)
+
+body(
+    'The retrieval team reported no sign of forced entry on any internal '
+    'door. No blood. No struggle. The building was quiet. '
+    'The exit Harris had been moving toward was found sealed from the inside.'
+)
+body(
+    'His three open case files were recovered from his office desk the following '
+    'week. Each was neatly closed. Each bore a handwritten notation in the margin: '
+    'resolved. No resolution was documented. No client had been contacted.'
+)
+body(
+    'Harris was formally reported missing on November 14, 1994. '
+    'The investigation into his disappearance was assigned to the Department '
+    'of Anomalous Research and immediately classified.'
 )
 
 document_block(
@@ -772,8 +791,12 @@ document_block(
         'Harris has no memory of receiving the tip.',
         'No record of who convinced him to enter the building.',
         '',
+        'STATUS: MISSING — NOV 14, 1994.',
+        'Last confirmed location: Aldric Building, Level 5.',
+        '',
         'The Aldric Building was demolished. May 1995.',
         'No transmitter was found.',
+        'No body was recovered.',
         '',
         '[ CASE FILE — SEALED INDEFINITELY ]',
     ],
@@ -785,6 +808,8 @@ body('Harris never filed a report. No one knew he had entered the building.')
 body('The anonymous tip came three weeks before. The voice on the recording was his own.')
 body('He was not sent there.')
 body('He was called there.', indent=False)
+spacer()
+body('He is still there.', indent=False)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -808,19 +833,24 @@ pull_quote(
 spacer()
 
 for line in [
-    'The Aldric Building no longer stands.',
+    'The Aldric Building was demolished in May 1995.',
+    'No transmitter was found in the rubble.',
+    'No body was recovered.',
     '',
-    'The frequency has not been detected since November 1994.',
+    'Detective S. Harris remains listed as missing.',
+    'His case is inactive.',
     '',
-    'Detective Harris closed his remaining open cases in December 1994.',
-    'He retired from private investigation in 1995.',
+    'The Department of Anomalous Research',
+    'was quietly dissolved in March 1996.',
+    'Its files were not transferred.',
+    'Its personnel were not named.',
     '',
-    'He does not discuss the Aldric Building.',
-    'He does not remember the tape dated 1991.',
+    'Forty-eight people entered the Aldric Building.',
+    'None came out.',
     '',
-    'He still hears something at night.',
-    'Just below the threshold of speech.',
-    'Something that responds when he listens back.',
+    'The frequency has not been detected since.',
+    '',
+    'No one is looking.',
 ]:
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
