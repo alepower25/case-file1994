@@ -582,40 +582,80 @@ note_block(
 # ══════════════════════════════════════════════════════════════════════════════
 chapter_opener('V', 'Inside the Aldric Building', '"Trust the clues. Run."')
 
-body(
-    'What Harris found inside defied every assumption in his case notes. The '
-    'building had not decayed in the normal sense. It was occupied — not by '
-    'squatters, not by wildlife — by something that moved with intention. '
-    'That tracked. That learned. That blocked exit points.'
-)
-body(
-    'Scattered across five floors were eleven evidence tapes and a series of '
-    'sealed documents, each encoding a fragment of the truth. The researchers '
-    'who had placed them there understood what was happening and had left behind '
-    'the only thing they could: a cipher. A way out for anyone who came after them.'
-)
-body(
-    'Each tape held a clue. Each clue was a letter pair. Together they decoded '
-    'the word that unlocked each floor\'s sealed exit.'
+body('What follows are Harris\'s personal audio recordings, recovered from his field device. They are reproduced here in sequence.')
+
+note_block(
+    'HARRIS — FIELD RECORDING 01  |  ARCHIVE FLOOR — LEVEL 1  |  NOV 5, 1994',
+    [
+        'Inside. The door sealed behind me — didn\'t hear it until it was done. Archive Floor. Filing cabinets everywhere, most pulled open. Someone went through these in a hurry a long time ago.',
+        '',
+        'Found a tape recorder on a desk. Still works. Going to use it. If something happens, someone should know I was here.',
+        '',
+        'Found my first researcher tape. They left a cipher. Something about the exit being frequency-locked. I don\'t fully understand it yet. I\'ll figure it out as I go.',
+        '',
+        'There\'s a smell down here. Old paper. Something else. Something warm that has no business being in an empty building.',
+        '',
+        'I heard something in the corridor behind me. I turned around. Nothing there. But the filing cabinet in the far corner — it was open when I arrived. It\'s closed now.',
+        '',
+        'Moving on.',
+    ],
+    sig='S. Harris'
 )
 
-tape_block('TAPE 010', 'The researchers left a cipher. The exit is locked by frequency-code. It was designed so ONLY the signal could decode it.')
-tape_block('TAPE 011  [FINAL]', 'You were never meant to leave. But the researchers left one way out. Find the cipher. Trust the clues. Run.')
+tape_block('TAPE 001 — RECOVERED, ARCHIVE FLOOR', 'Day 1. Entrance sealed from inside. Lock broken inward. Something in here did not want to leave.')
 
-body(
-    'On the third floor, Harris recovered a tape predating his investigation by '
-    'three years — a recording from 1991, in a voice that matched his own. He '
-    'had no memory of making it. He had no memory of ever entering the Aldric '
-    'Building before.'
+note_block(
+    'HARRIS — FIELD RECORDING 02  |  SUBLEVEL B1 — LEVEL 2  |  NOV 5, 1994',
+    [
+        'Made it to B1. The stairs going down are wrong — the light doesn\'t reach the bottom properly. It feels like the darkness has weight.',
+        '',
+        'Found more tapes. Playing them carefully, keeping the volume low.',
+        '',
+        'One of them — I need to write this down so I don\'t convince myself I imagined it — one of the tapes is in my voice. My voice. I have never been in this building. I would remember. I would remember.',
+        '',
+        'I played it three times. It\'s mine.',
+        '',
+        'There is something on this floor with me. I\'ve seen it twice. At the end of corridors. At the very edge of my flashlight beam — tall, slow, wrong in a way I can\'t put into a report. It moves like it\'s listening to something I can\'t hear.',
+        '',
+        'I pressed myself into a corner and didn\'t move for eleven minutes. I counted. It stood in the doorway. Didn\'t come in. Then it left.',
+        '',
+        'I don\'t know why it didn\'t come in. I am not going to think too long about why.',
+    ],
+    sig='S. Harris'
 )
-body('He kept moving.')
+
+tape_block(
+    'TAPE 003 — CORRUPTED  |  TIMESTAMP: 1991-03-22',
+    'This recording predates your investigation by three years. The voice on the tape is yours.',
+    corrupted=True
+)
 
 tape_block(
     'TAPE 009 — CORRUPTED',
     'You — Detective — this is a message from yourself. Three months from now. Do not look at it. Do not—',
     corrupted=True
 )
-tape_block('TAPE CORE-06', 'If you find this — I made it out. I think. —S.H.')
+
+note_block(
+    'HARRIS — FIELD RECORDING 03  |  SUBLEVEL B3 — LEVEL 3  |  NOV 6, 1994',
+    [
+        'B3. Containment zone. I can feel the depth of it — the building goes further down than the blueprints show. Found the incident log. 47 names. They all have the same personnel photo. Different names, same face. Whoever they were before, they became something else.',
+        '',
+        'Found a document sealed inside a wall. Someone hid it inside the actual wall. A note dated 1987: "If you are reading this inside the building, you were never meant to leave either."',
+        '',
+        'I am reading it inside the building.',
+        '',
+        'The thing from Level 1 — I think it\'s been on every floor. I think it follows me between levels. I\'ve stopped looking at it directly. I don\'t know why that feels important. It just does. Something about looking at it directly feels like an invitation.',
+        '',
+        'I decoded the cipher on this floor. The exit unlocked. The word was ESCAPE. I don\'t find that funny.',
+        '',
+        'Going deeper.',
+    ],
+    sig='S. Harris'
+)
+
+tape_block('TAPE 010 — RECOVERED, SUBLEVEL B3', 'The researchers left a cipher. The exit is locked by frequency-code. It was designed so ONLY the signal could decode it.')
+tape_block('TAPE 011 — FINAL, SUBLEVEL B3', 'You were never meant to leave. But the researchers left one way out. Find the cipher. Trust the clues. Run.')
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -623,9 +663,51 @@ tape_block('TAPE CORE-06', 'If you find this — I made it out. I think. —S.H.
 # ══════════════════════════════════════════════════════════════════════════════
 chapter_opener('VI', 'The Truth About the Signal', '"There was never a transmitter."')
 
-body(
-    'The last floor — the Containment Core — held the final answer.'
+note_block(
+    'HARRIS — FIELD RECORDING 04  |  SUBLEVEL C2 — LEVEL 4  |  NOV 6, 1994',
+    [
+        '[whispered] C2. Can\'t speak above a whisper. There\'s something on this floor that finds you by sound. I don\'t mean footsteps. I mean any sound. Breathing. The rustle of a jacket. I\'ve been moving in near-silence for — I don\'t know how long. My watch stopped.',
+        '',
+        'Found tapes but I\'m not playing them here. Reading the labels only. One of them says: "it hears heartbeats at close range." I believe it. I have been holding my breath until I see spots.',
+        '',
+        'It\'s standing in the dark about thirty feet from me right now. It hasn\'t moved in six minutes. I can\'t tell if it\'s waiting for something or if it simply — exists there. Like it belongs to the dark the way furniture belongs to a room.',
+        '',
+        'I\'m going to move. Very slowly. I\'m going to —',
+        '',
+        '[Recording cuts. 4 minutes 17 seconds of silence. Then:]',
+        '',
+        'Still alive. I don\'t know how. I don\'t think I want to know.',
+        '',
+        'Exit decoded. The word was SIGNAL. I found the tape that had my voice on it — the one from 1991. I\'m not going to play it again. I\'m leaving it here.',
+    ],
+    sig='S. Harris'
 )
+
+note_block(
+    'HARRIS — FIELD RECORDING 05  |  CONTAINMENT CORE — LEVEL 5  |  NOV 7, 1994',
+    [
+        'This is the last floor. I can feel it.',
+        '',
+        'There\'s something in the air down here I can feel in my back teeth. A frequency. Not quite a sound. More like the memory of a sound that hasn\'t happened yet.',
+        '',
+        'Found the final document. It\'s the one that explains everything. There is no transmitter. There never was. The workers — all 47 of them — they became the signal. They\'re still broadcasting. From inside the walls. From inside the floors. Everything I\'ve encountered in this building — every corridor, every doorway, every thing standing just outside my flashlight\'s reach — that\'s them. What\'s left of them. Forty-seven people compressed into something that has no name.',
+        '',
+        'And they\'ve been waiting. Seven years. Waiting for someone to walk back in.',
+        '',
+        'The anonymous tip — the voice on the recording — it was mine. I don\'t remember sending it. I don\'t remember any of this place. But I knew where it was. I\'ve always known. Something in me has always known.',
+        '',
+        'I think I\'ve been here before. I think that\'s what the 1991 tape is. I think I came here, and I found all of this, and I didn\'t make it out, and something sent me back — sent a version of my voice back — to do it again.',
+        '',
+        'The exit is to the east. The cipher decoded. The word is SUBJECT.',
+        '',
+        'I\'m going to destroy the transmitter. Even if there isn\'t one. Even if it\'s them. Even if it\'s already inside me. I have to try.',
+    ],
+    sig='S. Harris'
+)
+
+tape_block('TAPE CORE-06 — CONTAINMENT CORE', 'If you find this — I made it out. I think. —S.H.')
+
+body('The last floor — the Containment Core — held the final answer.')
 body(
     'There was no transmitter. There had never been a transmitter. The '
     'Department of Anomalous Research had spent years studying a device they '
@@ -644,9 +726,7 @@ pull_quote(
     'Core Log — Final Entry'
 )
 
-body(
-    'And for seven years, it had been waiting for someone to walk back in.'
-)
+body('And for seven years, it had been waiting for someone to walk back in.')
 
 document_block(
     'INCIDENT LOG — CONTAINMENT CORE',
@@ -667,7 +747,7 @@ document_block(
 # ══════════════════════════════════════════════════════════════════════════════
 # CHAPTER VII
 # ══════════════════════════════════════════════════════════════════════════════
-chapter_opener('VII', 'November 7, 1994', '"I pray that is enough."')
+chapter_opener('VII', 'November 7, 1994', '"The recording does not end with silence."')
 
 body(
     'The last known audio recording attributed to Detective S. Harris was '
@@ -675,17 +755,37 @@ body(
     'Level 5, Containment Core — on November 9, 1994, by a Department '
     'retrieval team. Harris himself was not found.'
 )
+body(
+    'The recording runs for forty-one seconds. Department archivists transcribed '
+    'it. Three separate analysts reviewed the audio. Each filed an independent '
+    'psychological incident report afterward. Two requested transfer. One resigned.'
+)
 
 note_block(
-    'HARRIS — AUDIO LOG  |  NOVEMBER 7, 1994  |  FINAL RECORDING',
+    'HARRIS — AUDIO LOG  |  NOVEMBER 7, 1994  |  RECORDING 06 — FINAL',
     [
-        '"The transmitter. I destroyed it. The frequency stopped."',
+        '"I destroyed it. The core device. Whatever it was. There was a sound — '
+        'like a frequency dropping out — and then the building went quiet. Really '
+        'quiet. The kind of quiet that has a shape to it."',
         '',
-        '"I pray that is enough."',
+        '"I think I can make it out. East exit. Stairs. The door was sealed when '
+        'I came down. I decoded it — I decoded all of them — I just need to—"',
         '',
-        '[Recording ends. Duration: 0:09. No further entries.]',
+        '[Footsteps. Fast. Twelve seconds of movement. Then Harris stops.]',
+        '',
+        '"It\'s still here."',
+        '',
+        '[Four seconds of silence.]',
+        '',
+        '"They\'re still here. All of them. They didn\'t — the frequency stopped '
+        'but they\'re still — oh god they\'re—"',
+        '',
+        '[Indistinct sound. The device microphone distorts. What follows is '
+        'consistent with a human voice at maximum amplitude. It lasts '
+        'approximately nine seconds and does not stop cleanly. '
+        'The recording does not end with silence.]',
     ],
-    sig='Det. Harris   Nov. 7, 1994'
+    sig='Det. Harris   Nov. 7, 1994  |  Duration: 0:41'
 )
 
 body(
