@@ -496,85 +496,7 @@ document_block(
 # ══════════════════════════════════════════════════════════════════════════════
 # CHAPTER IV
 # ══════════════════════════════════════════════════════════════════════════════
-chapter_opener('IV', 'The Nature of the Entity', '"Do not look at it directly."')
-
-body(
-    'Two distinct manifestations of the absorbed frequency were encountered '
-    'during the 1994 investigation. They are designated here by the names used '
-    'in the recovered field recordings.'
-)
-
-heading_para('The Figure', level=2)
-
-body(
-    'The primary manifestation. It moves. It hunts. It learns from each encounter, '
-    'adapting patrol patterns and response speed over time. It does not communicate. '
-    'It does not warn.'
-)
-body(
-    'Researchers speculate it is a composite of multiple absorbed identities — '
-    'the 47 workers, compressed into a single mobile form that retains only one '
-    'imperative: prevent exit.'
-)
-
-heading_para('The Listener', level=2)
-
-body(
-    'Encountered in Sublevels C2 and the Containment Core. Blind. Responds '
-    'exclusively to acoustic stimuli — footsteps, breathing, vibration. '
-    'Threat level exceeds that of The Figure in confined environments.'
-)
-body(
-    'It does not sleep. It locates sound sources faster with each detection. '
-    'It is not just detecting. It is learning.'
-)
-
-document_block(
-    'DEPT. MEMO — SUBJECT DESIGNATION: THE LISTENER',
-    [
-        'Blind. Responds exclusively to acoustic stimuli.',
-        'Threat level: CRITICAL.',
-        '',
-        'Do not run. Do not sprint.',
-        'It hears heartbeats at close range.',
-        'Silence is your only protection.',
-    ],
-    stamp='THREAT: CRITICAL',
-    shade='F5E8E8'
-)
-
-tape_block('TAPE C2-04', 'The sound triggers it. It cannot see. It only listens.')
-tape_block('TAPE C2-06', 'Move slow. Stay quiet. You have a chance. —Vale')
-
-body(
-    'Subject 47 — the last of the original workers — was confirmed as a distinct '
-    'contained entity in the lowest level of the building: the Containment Core. '
-    'It had been in that room for seven years. It was still waiting.'
-)
-
-document_block(
-    'CORE LOG — FINAL ENTRY  |  DATE UNKNOWN',
-    [
-        'Subject 47. Experiment 7. Day unknown.',
-        '',
-        'The signal is no longer external.',
-        'We confirmed it yesterday. It is inside the subjects.',
-        'They are broadcasting it.',
-        '',
-        'There is no transmitter. There never was.',
-        '',
-        'The building did not contain the signal.',
-        'The signal contained the building.',
-    ],
-    stamp='CORE LOG',
-    shade='F0EEE4'
-)
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-# CHAPTER V
-# ══════════════════════════════════════════════════════════════════════════════
-chapter_opener('V', 'Detective Harris', '"He was not sent there. He was called there."')
+chapter_opener('IV', 'Detective Harris', '"He was not sent there. He was called there."')
 
 body(
     'Seven years after the Aldric Building was sealed, Detective S. Harris — '
@@ -656,9 +578,9 @@ note_block(
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# CHAPTER VI
+# CHAPTER V
 # ══════════════════════════════════════════════════════════════════════════════
-chapter_opener('VI', 'Inside the Aldric Building', '"Trust the clues. Run."')
+chapter_opener('V', 'Inside the Aldric Building', '"Trust the clues. Run."')
 
 body(
     'What Harris found inside defied every assumption in his case notes. The '
@@ -697,9 +619,9 @@ tape_block('TAPE CORE-06', 'If you find this — I made it out. I think. —S.H.
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# CHAPTER VII
+# CHAPTER VI
 # ══════════════════════════════════════════════════════════════════════════════
-chapter_opener('VII', 'The Truth About the Signal', '"There was never a transmitter."')
+chapter_opener('VI', 'The Truth About the Signal', '"There was never a transmitter."')
 
 body(
     'The last floor — the Containment Core — held the final answer.'
@@ -743,9 +665,9 @@ document_block(
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# CHAPTER VIII
+# CHAPTER VII
 # ══════════════════════════════════════════════════════════════════════════════
-chapter_opener('VIII', 'November 7, 1994', '"I pray that is enough."')
+chapter_opener('VII', 'November 7, 1994', '"I pray that is enough."')
 
 body(
     'The last known audio recording attributed to Detective S. Harris was '
