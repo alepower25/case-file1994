@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CASE FILE 1994 — FULL INCIDENT RECORD</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+  :root {
+    --gold: rgba(188, 160, 70, 0.90);
+    --gold-dim: rgba(148, 124, 52, 0.60);
+    --green: rgba(80, 160, 80, 0.80);
+    --red: rgba(185, 40, 40, 0.85);
+    --blue-dim: rgba(100, 120, 180, 0.70);
+    --paper: rgba(200, 185, 140, 0.85);
+    --paper-dim: rgba(165, 150, 108, 0.60);
+    --bg: #050403;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--gold);
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.75;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  /* VHS scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.18) 2px,
+      rgba(0,0,0,0.18) 4px
+    );
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  /* Vignette */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.72) 100%);
+    pointer-events: none;
+    z-index: 998;
+  }
+
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 60px 32px 100px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    text-align: center;
+    margin-bottom: 64px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(148,124,52,0.22);
+  }
+
+  .header .classified {
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--red);
+    margin-bottom: 16px;
+    opacity: 0.85;
+  }
+
+  .header h1 {
+    font-size: 28px;
+    letter-spacing: 6px;
+    color: rgba(218, 188, 98, 0.96);
+    margin-bottom: 8px;
+    text-shadow: 0 0 32px rgba(188,160,70,0.25);
+  }
+
+  .header .subtitle {
+    font-size: 11px;
+    color: var(--gold-dim);
+    letter-spacing: 2px;
+  }
+
+  .header .meta {
+    margin-top: 20px;
+    font-size: 10px;
+    color: rgba(100, 88, 50, 0.55);
+    letter-spacing: 1px;
+  }
+
+  /* ── SECTION LABELS ── */
+  .section-label {
+    font-size: 9px;
+    letter-spacing: 4px;
+    color: var(--red);
+    margin-bottom: 6px;
+    opacity: 0.75;
+  }
+
+  /* ── CHAPTER HEADINGS ── */
+  h2 {
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: rgba(218, 188, 98, 0.92);
+    margin: 56px 0 6px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(148,124,52,0.18);
+  }
+
+  h2 .chapter-num {
+    color: rgba(100,88,50,0.50);
+    font-size: 10px;
+    margin-right: 10px;
+  }
+
+  /* ── BODY COPY ── */
+  .body-text {
+    color: var(--paper-dim);
+    margin: 18px 0;
+    font-size: 12.5px;
+  }
+
+  .body-text p {
+    margin-bottom: 14px;
+  }
+
+  /* ── DOCUMENT BLOCKS ── */
+  .document {
+    margin: 28px 0;
+    border: 1px solid rgba(148,124,52,0.22);
+    background: rgba(12, 10, 4, 0.75);
+    padding: 20px 24px;
+    position: relative;
+  }
+
+  .document::before {
+    content: attr(data-stamp);
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    font-size: 8px;
+    letter-spacing: 2px;
+    color: var(--red);
+    opacity: 0.65;
+    border: 1px solid rgba(185,40,40,0.30);
+    padding: 2px 6px;
+  }
+
+  .document .doc-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(148,124,52,0.15);
+  }
+
+  .document .doc-body {
+    color: var(--paper-dim);
+    font-size: 12px;
+    line-height: 1.8;
+  }
+
+  .document .doc-body p {
+    margin-bottom: 10px;
+  }
+
+  /* ── TAPE BLOCKS ── */
+  .tape {
+    margin: 14px 0;
+    padding: 12px 18px;
+    border-left: 2px solid rgba(80,160,80,0.40);
+    background: rgba(8,18,8,0.60);
+  }
+
+  .tape .tape-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--green);
+    margin-bottom: 6px;
+    opacity: 0.80;
+  }
+
+  .tape .tape-body {
+    color: rgba(172, 200, 148, 0.75);
+    font-size: 12px;
+    font-style: italic;
+  }
+
+  .tape.corrupted {
+    border-left-color: rgba(185,40,40,0.40);
+    background: rgba(18,4,4,0.60);
+  }
+
+  .tape.corrupted .tape-label { color: var(--red); }
+  .tape.corrupted .tape-body  { color: rgba(200,140,140,0.70); }
+
+  /* ── PERSONAL NOTES ── */
+  .note {
+    margin: 24px 0;
+    padding: 16px 22px;
+    border: 1px solid rgba(100,120,180,0.18);
+    background: rgba(6,8,18,0.70);
+  }
+
+  .note .note-header {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--blue-dim);
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(100,120,180,0.12);
+  }
+
+  .note .note-body {
+    color: rgba(148,168,220,0.72);
+    font-size: 12px;
+    line-height: 1.85;
+  }
+
+  .note .note-body p { margin-bottom: 10px; }
+
+  .note .note-sig {
+    margin-top: 14px;
+    font-size: 11px;
+    color: var(--blue-dim);
+    text-align: right;
+  }
+
+  /* ── RESTRICTED NOTICE ── */
+  .restricted {
+    margin: 48px 0 32px;
+    padding: 18px 24px;
+    border: 1px solid rgba(185,40,40,0.30);
+    background: rgba(14,4,4,0.80);
+    text-align: center;
+  }
+
+  .restricted .r-title {
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--red);
+    margin-bottom: 10px;
+  }
+
+  .restricted .r-body {
+    color: rgba(185,150,120,0.65);
+    font-size: 11.5px;
+    line-height: 2;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    margin: 48px 0;
+    border: none;
+    border-top: 1px solid rgba(148,124,52,0.15);
+    text-align: center;
+  }
+
+  .divider::after {
+    content: attr(data-label);
+    position: relative;
+    top: -9px;
+    background: var(--bg);
+    padding: 0 14px;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: rgba(100,88,50,0.42);
+  }
+
+  /* ── TIMELINE ── */
+  .timeline { margin: 24px 0; }
+
+  .timeline-entry {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+
+  .timeline-date {
+    flex-shrink: 0;
+    width: 145px;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--gold-dim);
+    padding-top: 2px;
+  }
+
+  .timeline-text {
+    color: var(--paper-dim);
+    font-size: 12px;
+    border-left: 1px solid rgba(148,124,52,0.18);
+    padding-left: 16px;
+  }
+
+  /* ── EPILOGUE QUOTE ── */
+  .epilogue {
+    margin: 48px 0;
+    text-align: center;
+    padding: 32px;
+    border-top: 1px solid rgba(148,124,52,0.15);
+    border-bottom: 1px solid rgba(148,124,52,0.15);
+  }
+
+  .epilogue .eq {
+    font-size: 14px;
+    font-style: italic;
+    color: rgba(200, 178, 108, 0.82);
+    line-height: 2;
+    margin-bottom: 14px;
+  }
+
+  .epilogue .ea {
+    font-size: 10px;
+    color: var(--gold-dim);
+    letter-spacing: 2px;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 80px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(148,124,52,0.12);
+    text-align: center;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: rgba(100,88,50,0.35);
+    line-height: 2.2;
+  }
+
+  /* ── REC indicator ── */
+  .rec-bar {
+    position: fixed;
+    top: 12px;
+    left: 16px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: rgba(215,44,44,0.70);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .rec-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(215,44,44,0.80);
+    animation: blink 1s step-start infinite;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .rec-time {
+    position: fixed;
+    bottom: 10px;
+    left: 12px;
+    font-size: 9px;
+    color: rgba(188,160,70,0.35);
+    z-index: 1000;
+    letter-spacing: 1px;
+  }
+
+  .cam-label {
+    position: fixed;
+    bottom: 10px;
+    right: 12px;
+    font-size: 9px;
+    color: rgba(188,160,70,0.30);
+    z-index: 1000;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div class="rec-bar"><div class="rec-dot"></div> REC</div>
+<div class="rec-time">REC 1994-11-07 &nbsp; 00:00:00</div>
+<div class="cam-label">CASE FILE 1994 — INCIDENT RECORD</div>
+
+<div class="page">
+
+  <!-- ══ HEADER ══ -->
+  <div class="header">
+    <div class="classified">▌ CLASSIFIED — DEPT. OF ANOMALOUS RESEARCH — EYES ONLY ▌</div>
+    <h1>CASE FILE 1994</h1>
+    <div class="subtitle">THE ALDRIC BUILDING INCIDENT — FULL INCIDENT RECORD</div>
+    <div class="meta">
+      FILE REF: DAR-1994-CF-0047 &nbsp;|&nbsp; COMPILED: NOV 1994 &nbsp;|&nbsp; STATUS: SEALED INDEFINITELY
+    </div>
+  </div>
+
+
+  <!-- ══ I. ORIGIN ══ -->
+  <div class="section-label">CHAPTER I</div>
+  <h2><span class="chapter-num">01.</span> PROJECT VEIL — ORIGIN</h2>
+
+  <div class="body-text">
+    <p>In 1985, a division of the federal government known only as the <strong style="color:var(--gold)">Department of Anomalous Research</strong> made contact with something it could not explain.</p>
+    <p>It was not a creature. It was not a signal in any conventional sense. It was a <em>frequency</em> — a pattern of sound that existed at the edge of human perception, appearing spontaneously in an abandoned industrial district outside the city. Workers in the surrounding blocks reported hearing it in their sleep. Three reported that it had begun to respond to them. Two could no longer leave the area voluntarily.</p>
+    <p>The Department mobilised within 48 hours. The entity was contained, documented, and assigned a project designation: <strong style="color:var(--gold)">VEIL</strong>.</p>
+    <p>A research facility was requisitioned — the Aldric Building, Block 7. Staff were assigned. Clearances were issued. And the frequency was brought inside.</p>
+    <p>None of the senior researchers believed it could escape.</p>
+  </div>
+
+  <div class="document" data-stamp="CLASSIFIED">
+    <div class="doc-title">INTERNAL MEMO — ARCHIVE DIVISION &nbsp;|&nbsp; JAN 14, 1987</div>
+    <div class="doc-body">
+      <p>All employees on Floor 3 have been instructed to avoid Sub-corridor 7B until further notice.</p>
+      <p>Reason: unspecified auditory anomaly. Reported by 9 separate workers.</p>
+      <p>Acknowledged by management: NO.</p>
+    </div>
+  </div>
+
+
+  <!-- ══ II. RESEARCH ══ -->
+  <hr class="divider" data-label="FIELD DOCUMENTATION">
+
+  <div class="section-label">CHAPTER II</div>
+  <h2><span class="chapter-num">02.</span> THE RESEARCHERS — WHAT THEY FOUND</h2>
+
+  <div class="body-text">
+    <p>The early research logs describe a frequency that was initially passive. It did not respond to stimuli. It did not move. It simply existed in the lower sublevels of the Aldric Building, broadcasting at 40Hz — a range below normal speech, felt more than heard.</p>
+    <p>That changed on Day 4.</p>
+  </div>
+
+  <div class="document" data-stamp="FIELD NOTE">
+    <div class="doc-title">FIELD NOTE — DR. VALE &nbsp;|&nbsp; SUBLEVEL B1</div>
+    <div class="doc-body">
+      <p>The signal does not repeat. It responds.</p>
+      <p>We changed the frequency on day 4. It changed back before we could log it. Kellner refuses to enter the room anymore. I understand why. We should have stopped in September.</p>
+    </div>
+  </div>
+
+  <div class="body-text">
+    <p>Dr. Vale was one of the lead researchers assigned to the Sublevel B1 containment zone. Her notes — recovered during the 1994 investigation — paint a portrait of a team that understood what was happening to them and could not stop it.</p>
+    <p>The frequency wasn't just broadcasting. It was <em>learning</em>. It absorbed identity from proximity. The researchers closest to the entity began to change — not physically, not immediately — but at the edges. Small things first.</p>
+  </div>
+
+  <div class="document" data-stamp="PERSONAL LOG">
+    <div class="doc-title">PERSONAL LOG — DR. VALE &nbsp;|&nbsp; SUBLEVEL B1 &nbsp;|&nbsp; NOV 1, 1987</div>
+    <div class="doc-body">
+      <p>The frequency is changing us.</p>
+      <p>Kellner started humming it in his sleep. None of us can remember what it sounded like before. I tried to leave today. My feet brought me back. I think it wants us here.</p>
+    </div>
+  </div>
+
+  <div class="body-text">
+    <p>Dr. Kellner — never formally identified beyond his surname in Vale's notes — reportedly refused to re-enter the research wing in early November 1987. He was not recorded among the 47 missing. What became of him is unknown.</p>
+    <p>Dr. Neel was assigned to Sublevel C2. A recording was found near his last known position. No researcher who recovered it ever listened to it. It was sealed and filed as Exhibit 7-N. The file has since been destroyed.</p>
+  </div>
+
+  <div class="tape corrupted">
+    <div class="tape-label">▶ TAPE 003 — CORRUPTED &nbsp;|&nbsp; TIMESTAMP: 1991-03-22</div>
+    <div class="tape-body">"This recording predates your investigation by three years. The voice on the tape is yours."</div>
+  </div>
+
+
+  <!-- ══ III. CONTAINMENT BREACH ══ -->
+  <hr class="divider" data-label="INCIDENT RECORD">
+
+  <div class="section-label">CHAPTER III</div>
+  <h2><span class="chapter-num">03.</span> MARCH 1987 — THE CONTAINMENT BREACH</h2>
+
+  <div class="body-text">
+    <p>The official cause of death listed in the sealed government record is a gas leak. The building, it states, was decommissioned following an industrial accident. The files were sealed. The record was archived. The case was closed.</p>
+    <p>That is a lie.</p>
+    <p>In March 1987, the containment around PROJECT VEIL failed. Forty-seven city workers — maintenance staff, researchers, and administrative personnel — were present in the building at the time of the breach. None reached the surface.</p>
+    <p>The frequency did not kill them. It <em>absorbed</em> them.</p>
+  </div>
+
+  <div class="tape">
+    <div class="tape-label">▶ TAPE 004</div>
+    <div class="tape-body">"PROJECT VEIL was containment. They caught it in 1985. It does not die. It LEARNS. It absorbs identity from proximity."</div>
+  </div>
+
+  <div class="tape">
+    <div class="tape-label">▶ TAPE 005</div>
+    <div class="tape-body">"The containment failed March 1987. 47 workers. None made it to the surface. The frequency became them."</div>
+  </div>
+
+  <div class="tape">
+    <div class="tape-label">▶ TAPE 006</div>
+    <div class="tape-body">"It mimics human posture to move. It is not what you think you see. Do not look at it directly."</div>
+  </div>
+
+  <div class="timeline">
+    <div class="timeline-entry">
+      <div class="timeline-date">NOV 2, 1987</div>
+      <div class="timeline-text">Worker 41 unaccounted for. Search ongoing.</div>
+    </div>
+    <div class="timeline-entry">
+      <div class="timeline-date">NOV 3, 1987</div>
+      <div class="timeline-text">Workers 42–44. Doors found open from inside.</div>
+    </div>
+    <div class="timeline-entry">
+      <div class="timeline-date">NOV 4, 1987</div>
+      <div class="timeline-text">Transmitter signal strength: 400% baseline.</div>
+    </div>
+    <div class="timeline-entry">
+      <div class="timeline-date">NOV 5, 1987 — 2:44 AM</div>
+      <div class="timeline-text">Emergency evacuation order issued. Building sealed by Dept. order 0312.</div>
+    </div>
+    <div class="timeline-entry">
+      <div class="timeline-date">NOV 5, 1987</div>
+      <div class="timeline-text">47 unaccounted for. File sealed. Official record: gas leak.</div>
+    </div>
+  </div>
+
+  <div class="document" data-stamp="EYES ONLY">
+    <div class="doc-title">EMERGENCY MEMO — SUBLEVEL B3 &nbsp;|&nbsp; NOV 5, 1987 — 2:44 AM</div>
+    <div class="doc-body">
+      <p>Containment breach confirmed. All 47 subjects: status unknown.</p>
+      <p>Building sealed by Dept. order 0312. This file has been classified retroactively.</p>
+      <p>If you are reading this inside the building — you were never meant to leave either.</p>
+    </div>
+  </div>
+
+
+  <!-- ══ IV. THE NATURE OF THE ENTITY ══ -->
+  <hr class="divider" data-label="ENTITY ASSESSMENT">
+
+  <div class="section-label">CHAPTER IV</div>
+  <h2><span class="chapter-num">04.</span> THE NATURE OF THE ENTITY</h2>
+
+  <div class="body-text">
+    <p>Two distinct manifestations of the absorbed frequency were encountered during the 1994 investigation. They are designated here by the names used in the recovered field recordings.</p>
+  </div>
+
+  <div class="document" data-stamp="DEPT. MEMO">
+    <div class="doc-title">THE FIGURE &nbsp;|&nbsp; THREAT DESIGNATION: ACTIVE</div>
+    <div class="doc-body">
+      <p>The primary manifestation. It moves. It hunts. It learns from each encounter, adapting patrol patterns and response speed over time. It does not communicate. It does not warn.</p>
+      <p>Researchers speculate it is a composite of multiple absorbed identities — the 47 workers, compressed into a single mobile form that retains only one imperative: prevent exit.</p>
+      <p>Field note from Dr. Vale: <em>"Do not look at it directly."</em></p>
+    </div>
+  </div>
+
+  <div class="document" data-stamp="DEPT. MEMO">
+    <div class="doc-title">THE LISTENER &nbsp;|&nbsp; THREAT DESIGNATION: CRITICAL</div>
+    <div class="doc-body">
+      <p>Encountered in Sublevels C2 and the Containment Core. Blind. Responds exclusively to acoustic stimuli — footsteps, breathing, vibration. Threat level exceeds that of The Figure in confined environments.</p>
+      <p>It does not sleep. It locates sound sources faster with each detection. It is not just detecting. It is <em>learning</em>.</p>
+      <p>Do not run. Do not sprint. It hears heartbeats at close range. Silence is your only protection.</p>
+    </div>
+  </div>
+
+  <div class="tape">
+    <div class="tape-label">▶ TAPE C2-04</div>
+    <div class="tape-body">"The sound triggers it. It cannot see. It only listens."</div>
+  </div>
+
+  <div class="tape">
+    <div class="tape-label">▶ TAPE C2-06</div>
+    <div class="tape-body">"Move slow. Stay quiet. You have a chance. —Vale"</div>
+  </div>
+
+  <div class="body-text">
+    <p>Subject 47 — the last of the original workers — was confirmed as a distinct contained entity in the lowest level of the building: the Containment Core. It had been in that room for seven years. It was still waiting.</p>
+  </div>
+
+  <div class="document" data-stamp="CORE LOG — FINAL ENTRY">
+    <div class="doc-title">CORE LOG — FINAL ENTRY &nbsp;|&nbsp; DATE UNKNOWN</div>
+    <div class="doc-body">
+      <p>Subject 47. Experiment 7. Day unknown.</p>
+      <p>The signal is no longer external. We confirmed it yesterday. It is inside the subjects. They are broadcasting it.</p>
+      <p>There is no transmitter. There never was.</p>
+      <p>The building did not contain the signal. The signal contained the building.</p>
+    </div>
+  </div>
+
+
+  <!-- ══ V. DETECTIVE HARRIS ══ -->
+  <hr class="divider" data-label="INVESTIGATION — 1994">
+
+  <div class="section-label">CHAPTER V</div>
+  <h2><span class="chapter-num">05.</span> DETECTIVE HARRIS — THE INVESTIGATION</h2>
+
+  <div class="body-text">
+    <p>Seven years after the Aldric Building was sealed, Detective S. Harris — a private investigator working three unrelated open cases — received an anonymous email.</p>
+  </div>
+
+  <div class="document" data-stamp="RECEIVED">
+    <div class="doc-title">EMAIL — RECEIVED: NOV 3, 1994 — 11:47 PM</div>
+    <div class="doc-body">
+      <p>FROM: [REDACTED]@anomalousresearch.gov &nbsp;|&nbsp; TO: s.harris@privateinvestigation.net</p>
+      <p>Subject: THE ALDRIC BUILDING — EYES ONLY</p>
+      <p>Detective Harris,</p>
+      <p>Forty-seven city workers disappeared from this building in 1987. The official cause of death: gas leak. The official record: sealed by government order. That is a lie.</p>
+      <p>There are recordings inside. Documents. Evidence of what really happened. What they were studying. What they found.</p>
+      <p>You are the only person I trust to go in. Go alone. Tell no one. Do not delay.</p>
+      <p style="color:var(--red);opacity:0.70;">— SENDER ID CORRUPTED —</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <div class="note-header">HARRIS — PRIVATE CASE NOTES &nbsp;|&nbsp; NOVEMBER 4, 1994 — 11:58 PM</div>
+    <div class="note-body">
+      <p>Received an anonymous email tonight. The sender address no longer exists. IP trace: dead end.</p>
+      <p>Official record on the Aldric Building: gas leak, decommissioned. Too clean. Sealed too fast.</p>
+      <p>I have three open cases that trace back to that block. No connection I can prove. But I feel it.</p>
+      <p>This could be nothing. Or it could be everything.</p>
+      <p>Tomorrow. 3 AM. No backup.</p>
+    </div>
+    <div class="note-sig">— S. Harris</div>
+  </div>
+
+  <div class="body-text">
+    <p>Harris arrived at the Aldric Building on the morning of November 5, 1994, at approximately 3:06 AM. It was raining. The guardhouse was unoccupied. The gate was unlocked.</p>
+    <p>Harris noted something else — a sound difficult to place. Not the rain. Something beneath it.</p>
+    <p>He went in alone.</p>
+  </div>
+
+  <div class="note">
+    <div class="note-header">ALDRIC BUILDING — BLOCK 7 &nbsp;|&nbsp; NOVEMBER 5, 1994 — 3:06 AM</div>
+    <div class="note-body">
+      <p>Still raining. The guardhouse is unoccupied. The gate is unlocked. There should be a security key inside.</p>
+      <p>The building entrance is sealed. Whatever is in there — it has been waiting seven years.</p>
+      <p>I can hear the rain on the roof. Something else, too. Hard to place.</p>
+      <p>Somewhere in that building is the truth. I am going in.</p>
+    </div>
+    <div class="note-sig">— S. Harris</div>
+  </div>
+
+
+  <!-- ══ VI. INSIDE ══ -->
+  <hr class="divider" data-label="INSIDE THE BUILDING">
+
+  <div class="section-label">CHAPTER VI</div>
+  <h2><span class="chapter-num">06.</span> INSIDE THE ALDRIC BUILDING</h2>
+
+  <div class="body-text">
+    <p>What Harris found inside the building defied every assumption in his case notes. The building had not decayed in the normal sense. It was occupied. Not by squatters. Not by wildlife. By something that moved with intention — that tracked, that learned, that blocked exit points.</p>
+    <p>Scattered across five floors were eleven evidence tapes and a series of sealed documents, each encoding a fragment of the truth. The researchers who had placed them there understood what was happening and had left behind the only thing they could: a cipher. A way out for anyone who came after them.</p>
+    <p>Each tape held a clue. Each clue was a letter pair. Together they decoded the word that unlocked each floor's sealed exit.</p>
+  </div>
+
+  <div class="tape">
+    <div class="tape-label">▶ TAPE 010</div>
+    <div class="tape-body">"The researchers left a cipher. The exit is locked by frequency-code. It was designed so ONLY the signal could decode it."</div>
+  </div>
+
+  <div class="tape">
+    <div class="tape-label">▶ TAPE 011 — FINAL</div>
+    <div class="tape-body">"You were never meant to leave. But the researchers left one way out. Find the cipher. Trust the clues. Run."</div>
+  </div>
+
+  <div class="body-text">
+    <p>On the third floor, Harris recovered a tape predating his investigation by three years — a recording from 1991, in a voice that matched his own. He had no memory of making it. He had no memory of ever entering the Aldric Building before.</p>
+    <p>He kept moving.</p>
+  </div>
+
+  <div class="tape corrupted">
+    <div class="tape-label">▶ TAPE 009 — CORRUPTED</div>
+    <div class="tape-body">"You — Detective — this is a message from yourself. Three months from now. Do not look at it. Do not—"</div>
+  </div>
+
+  <div class="tape">
+    <div class="tape-label">▶ TAPE CORE-06</div>
+    <div class="tape-body">"If you find this — I made it out. I think. —S.H."</div>
+  </div>
+
+
+  <!-- ══ VII. THE TRUTH ══ -->
+  <hr class="divider" data-label="THE TRUTH">
+
+  <div class="section-label">CHAPTER VII</div>
+  <h2><span class="chapter-num">07.</span> THE TRUTH ABOUT THE SIGNAL</h2>
+
+  <div class="body-text">
+    <p>The last floor — the Containment Core — held the final answer.</p>
+    <p>There was no transmitter. There had never been a transmitter. The Department of Anomalous Research had spent years studying a device they believed was broadcasting the frequency. They had the cause and effect inverted.</p>
+    <p>The frequency was not coming from a machine in the building. The frequency was coming from the workers. All forty-seven of them. Absorbed into the signal, they had become the source. They were broadcasting it. They were <em>still</em> broadcasting it, from inside the walls, from inside the floors, from the darkness on every level of the Aldric Building.</p>
+    <p>The building did not contain the signal. The signal contained the building.</p>
+    <p>And for seven years, it had been waiting for someone to walk back in.</p>
+  </div>
+
+  <div class="document" data-stamp="CORE LOG">
+    <div class="doc-title">INCIDENT LOG — CONTAINMENT CORE</div>
+    <div class="doc-body">
+      <p>All 47 subjects confirmed contained — Level 5. Acoustic sensitivity: extreme. Movement triggers response.</p>
+      <p>Evacuation order: Nov 5, 1987 — too late.</p>
+      <p>This floor was never meant to be opened again.</p>
+      <p><em>If you are reading this — run. Slowly.</em></p>
+    </div>
+  </div>
+
+
+  <!-- ══ VIII. AFTERMATH ══ -->
+  <hr class="divider" data-label="AFTERMATH">
+
+  <div class="section-label">CHAPTER VIII</div>
+  <h2><span class="chapter-num">08.</span> NOVEMBER 7, 1994 — AFTERMATH</h2>
+
+  <div class="body-text">
+    <p>Harris exited the Aldric Building on November 7, 1994 — two days after entry. His final recorded statement, recovered from a personal audio device found near the building's south exit, reads as follows:</p>
+  </div>
+
+  <div class="note">
+    <div class="note-header">HARRIS — AUDIO LOG &nbsp;|&nbsp; NOVEMBER 7, 1994</div>
+    <div class="note-body">
+      <p>"The transmitter. I destroyed it. The frequency stopped."</p>
+      <p>"I pray that is enough."</p>
+    </div>
+    <div class="note-sig">— Det. Harris &nbsp; Nov. 7, 1994</div>
+  </div>
+
+  <div class="restricted">
+    <div class="r-title">▌ DEPT. OF ANOMALOUS RESEARCH — INTERNAL NOTE [RESTRICTED] ▌</div>
+    <div class="r-body">
+      Harris was not assigned to this investigation.<br>
+      Harris received an anonymous tip. Caller: unidentified.<br>
+      Voice pattern on tip recording: matches no known individual.<br>
+      Harris has no memory of receiving the tip.<br>
+      No record of who convinced him to enter the building.<br>
+      <br>
+      The Aldric Building was demolished. May 1995.<br>
+      No transmitter was found.<br>
+      <br>
+      <span style="color:var(--red);opacity:0.80;">[ CASE FILE — SEALED INDEFINITELY ]</span>
+    </div>
+  </div>
+
+  <div class="body-text">
+    <p>Harris never filed a report. No one knew he had entered the building.</p>
+    <p>The anonymous tip came three weeks before. The voice on the recording was his own.</p>
+    <p>He was not sent there.</p>
+    <p>He was <em>called</em> there.</p>
+  </div>
+
+
+  <!-- ══ EPILOGUE ══ -->
+  <hr class="divider" data-label="EPILOGUE">
+
+  <div class="epilogue">
+    <div class="eq">
+      "The signal does not repeat.<br>
+      It responds.<br>
+      <br>
+      We changed the frequency on day 4.<br>
+      It changed back before we could log it."
+    </div>
+    <div class="ea">— Dr. Vale &nbsp;|&nbsp; Field Note &nbsp;|&nbsp; Sublevel B1 &nbsp;|&nbsp; 1987</div>
+  </div>
+
+  <div class="body-text" style="text-align:center; color: rgba(100,88,50,0.45); font-size:11px; margin-top: 32px;">
+    <p>The Aldric Building no longer stands.</p>
+    <p>The frequency has not been detected since November 1994.</p>
+    <p>Detective Harris closed his remaining open cases in December 1994.<br>He retired from private investigation in 1995.</p>
+    <p>He does not discuss the Aldric Building.<br>He does not remember the tape dated 1991.</p>
+    <p>He still hears something at night.<br>Just below the threshold of speech.<br>Something that responds when he listens back.</p>
+  </div>
+
+
+  <!-- ══ FOOTER ══ -->
+  <div class="footer">
+    CASE FILE 1994 &nbsp;|&nbsp; FULL INCIDENT RECORD<br>
+    DAR-1994-CF-0047 &nbsp;|&nbsp; CLASSIFICATION: ABOVE TOP SECRET<br>
+    UNAUTHORISED DISCLOSURE IS A FEDERAL OFFENCE<br><br>
+    Created and Developed by &nbsp; Ale Espinoza &amp; Vanessa Baldueza
+  </div>
+
+</div>
+</body>
+</html>
