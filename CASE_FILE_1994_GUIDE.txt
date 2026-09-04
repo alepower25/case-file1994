@@ -2,6 +2,7 @@
 ==================================================================
      CASE FILE 1994  --  PLAYER GUIDE & DOCUMENTATION
      CLASSIFIED  --  DEPT. OF ANOMALOUS RESEARCH  --  EYES ONLY
+     VERSION 1.5  --  UPDATED SEP 2025
 ==================================================================
 
 
@@ -20,6 +21,35 @@
 
   November 5, 1994. 3:06 AM. You are going in.
 
+  There is more than one way this ends.
+  Most players will not find all of them.
+
+
+------------------------------------------------------------------
+  COMPLETION  --  STAR SYSTEM
+------------------------------------------------------------------
+
+  Your completion state is tracked permanently across sessions
+  and displayed on the title screen.
+
+  NO STARS
+    The case is open. You have not yet reached the end.
+
+  STAR STAR  (★★)  --  red
+    [ NO MERCY CLEARED ]
+    You found the secret level and survived it.
+    This is not easy. Most players will not reach this.
+
+  STAR STAR STAR  (★★★)  --  gold
+    [ 100% COMPLETE ]
+    You have cleared the main game on INSANE difficulty.
+    The title screen will never look the same again.
+    There is nothing left to find.
+
+    ...
+
+    Or is there?
+
 
 ------------------------------------------------------------------
   CONTROLS
@@ -29,15 +59,18 @@
   SPRINT ............... Hold SHIFT  (drains Stamina)
   SNEAK ................ Hold C  (slower movement, very low noise)
   FLASHLIGHT ........... F  (drains Battery, restores Sanity)
+  RECHARGE BATTERY ..... R  (charges from reserve; limited uses)
   FIELD NOTES .......... N  (view collected lore documents)
+  BRIEFING TAB ......... N then TAB  (re-read Harris's audio logs)
   ADVANCE / INTERACT ... SPACE  or  Left Click
   PAUSE ................ P  or  ESC
   SETTINGS ............. S  (from title screen only)
+  PATCH NOTES .......... P  (from title screen)
+  INSTRUCTIONS ......... H  (from title screen, re-accessible)
 
   NOTE: A HELP SCREEN showing all controls appears the first
   time you begin the game. Press SPACE, ESC, or click to dismiss.
-  It will not appear again (stored locally). To reset: clear
-  your browser's local storage for this page.
+  It can be accessed again at any time from the title screen  [ H ].
 
 
   OBJECTIVE:
@@ -46,6 +79,12 @@
     Once all evidence is collected, reach the EXIT.
     At the exit, decode the encoded word using your clues.
     Type the correct word to unlock the next level.
+
+  NOTE ON CIPHER WORDS:
+    The encoded word and clues are RANDOMIZED each run.
+    The word belongs to the same category per level,
+    but the specific encoding changes every time you play.
+    Memorizing answers from a previous run will not help.
 
 
 ------------------------------------------------------------------
@@ -60,6 +99,7 @@
     Drains when the flashlight is OFF or a monster is nearby.
     Low sanity causes visual distortion and hallucinations.
     Recovers when the flashlight is ON with battery remaining.
+    In the secret level, certain light sources restore Sanity.
 
   BATTERY
     Drains while the flashlight is active.
@@ -83,8 +123,9 @@
   MONSTERS
 ------------------------------------------------------------------
 
-  There are two distinct monsters in Case File 1994.
-  They behave completely differently. Know both.
+  There are three distinct entities in Case File 1994.
+  Each one behaves differently. Each one requires
+  a completely different survival strategy.
 
 
   THE FIGURE  (Levels 1, 2, 3)
@@ -118,6 +159,8 @@
     STARE-BACK
       If the Figure is visible and you face it,
       it freezes briefly. Use this to create distance.
+      NOTE: On INSANE difficulty, staring only works twice.
+      After that, the Figure encroaches regardless.
 
     SAFE ROOMS
       Each level has one small room (green-tinted floor)
@@ -174,17 +217,22 @@
       The Listener cannot be frozen by looking at it.
       Silence is your only defense.
 
-  DIFFICULTY SCALING -- THE LISTENER:
 
-    EASY   : Detects noise only above 48%. Slow pursuit.
-             Calms down quickly once you stop.
+  [ENTITY DESIGNATION: CLASSIFIED]  (Secret Level only)
+  ................................................................
 
-    NORMAL : Detects noise above 28%. Standard speed.
-             5% speed and range reduction from base.
+  Something else is in the building.
+  It was not in any of the reports.
 
-    HARD   : Detects noise as low as 12%. Very fast pursuit.
-             Needs noise below 6% to stop chasing.
-             Hearing range increased 55%.
+  It does not lurk. It does not patrol.
+  It chases.
+
+  You cannot fight it. You cannot freeze it.
+  The only option is to hide.
+  Choose carefully. It hears lockers.
+
+  Further information has been sealed by Dept. order 0312.
+  If you encounter it -- you already know what it looks like.
 
 
 ------------------------------------------------------------------
@@ -193,13 +241,19 @@
 
   Select from the Settings screen (press S on the title).
 
+  VERY EASY  (Crybaby Mode)
+    Larger health, sanity, and stamina pools.
+    +10% movement speed bonus.
+    Figure reduced speed. Extended cipher timer.
+    A gift battery is provided on Level 0.
+    Certain document text is simplified.
+
   EASY
     Figure speed reduced 30%.
     Figure lurks much longer before going aggressive.
     Cipher timer doubled to 6 minutes.
     Listener detects noise only above 48%.
     Listener is slower and calms down quickly.
-    NOTE: This will ruin the experience. Not recommended.
 
   NORMAL  (recommended)
     All stats tuned approximately 5% in favor of the player.
@@ -213,10 +267,28 @@
     Listener speed increased 65%. Hearing range 55% wider.
     Listener needs noise below 6% before it stops chasing.
 
+  INSANE
+    Everything is faster. The Figure no longer tolerates
+    being stared at indefinitely. The Listener senses at
+    proximity regardless of noise level.
+    Cipher timer: 45 seconds.
+    Completing INSANE mode unlocks something.
+    You will know when it happens.
+
+  SECRET CODE
+    There is a field in the Settings screen.
+    Type something and press ENTER.
+    Pay attention to the documents you collect.
+    Certain letters are not where they should be.
+
 
 ------------------------------------------------------------------
   LEVELS  --  WALKTHROUGH AND ANSWERS
 ------------------------------------------------------------------
+
+  NOTE: Cipher answers change every run (words are randomized).
+  The examples below are from a previous recorded session.
+  Your encoded word will differ. Use your collected clues.
 
 
   LEVEL 0  --  ALDRIC BUILDING EXTERIOR
@@ -238,6 +310,12 @@
     the green ENTER doorway at the bottom.
     No cipher. No monster. Take your time.
 
+  NOTE FOR INSANE PLAYERS:
+    There is something in the far corner of the exterior.
+    It should not be there. It was not in the original map.
+    Approach carefully. The password is not guessable.
+    Entering the wrong one has consequences.
+
 
   ................................................................
 
@@ -249,17 +327,8 @@
   Color tone  : Amber
   Tapes       : 3
 
-  CLUES FROM TAPES:
-    Tape 001  >>  B = R
-    Tape 002  >>  Q = O
-    Tape 003  >>  N = M
-
-  ENCODED WORD:    B  Q  Q  N
-
-  ANSWER:          R  O  O  M
-
-  You have 3 minutes at the exit to type the answer.
-  The Figure does not stop moving during the cipher phase.
+  NOTE: The cipher word is randomized. Collect all 3 tapes
+  and read your clues before approaching the EXIT.
 
 
   ................................................................
@@ -272,15 +341,8 @@
   Color tone  : Cold blue-grey
   Tapes       : 4  (one corrupted tape triggers a special SFX)
 
-  CLUES FROM TAPES:
-    Tape 001  >>  H = B   (CORRUPTED TAPE)
-    Tape 002  >>  V = L
-    Tape 003  >>  Z = O
-    Tape 004  >>  F = D
-
-  ENCODED WORD:    H  V  Z  Z  F
-
-  ANSWER:          B  L  O  O  D
+  NOTE: The cipher word is randomized. One tape plays a
+  corrupted audio event -- this is normal. Collect all 4.
 
 
   ................................................................
@@ -292,17 +354,6 @@
   Monster     : The Figure  (fast, aggressive, can teleport)
   Color tone  : Deep red
   Tapes       : 5
-
-  CLUES FROM TAPES:
-    Tape 001  >>  X = E
-    Tape 002  >>  K = S
-    Tape 003  >>  J = C
-    Tape 004  >>  B = A
-    Tape 005  >>  Y = P
-
-  ENCODED WORD:    X  K  J  B  Y  X
-
-  ANSWER:          E  S  C  A  P  E
 
   WARNING:
     After 3 encroachments with low Sanity, the Figure
@@ -326,18 +377,6 @@
   Sprinting or picking up tapes will alert it immediately.
   Walk slowly. Stand still after every pickup.
 
-  CLUES FROM TAPES:
-    Tape C2-01  >>  K = S
-    Tape C2-02  >>  X = I
-    Tape C2-03  >>  O = G
-    Tape C2-04  >>  Q = N
-    Tape C2-05  >>  B = A
-    Tape C2-06  >>  A = L
-
-  ENCODED WORD:    K  X  O  Q  B  A
-
-  ANSWER:          S  I  G  N  A  L
-
   TIP: After each tape pickup, stand completely still
        until your NOISE bar drops to green before moving.
 
@@ -357,44 +396,64 @@
   corridors. The Listener starts deep in the map.
   Seven tapes are scattered throughout. Patience is mandatory.
 
-  CLUES FROM TAPES:
-    Tape CORE-01  >>  Z = S
-    Tape CORE-02  >>  P = U
-    Tape CORE-03  >>  Y = B
-    Tape CORE-04  >>  Q = J
-    Tape CORE-05  >>  R = E
-    Tape CORE-06  >>  J = C
-    Tape CORE-07  >>  W = T
-
-  ENCODED WORD:    Z  P  Y  Q  R  J  W
-
-  ANSWER:          S  U  B  J  E  C  T
-
   WARNING:
     The Listener on Level 5 moves faster and patrols more
     aggressively than on Level 4. Every footstep counts.
-    Breath carefully. Move like a ghost.
+    Breathe carefully. Move like a ghost.
+
+
+  ................................................................
+
+  SECRET LEVEL  --  [DESIGNATION REDACTED]
+  ................................................................
+
+  Access    : Settings screen  >>  Secret Code field
+  Monster   : [CLASSIFIED]
+  Objective : Find all 10 missing persons. All of them.
+  Tapes     : None. No cipher. No exit puzzle.
+
+  The level does not end until every piece is found.
+  The entity grows faster with each recovery.
+  Lockers provide cover. Use them carefully.
+  Sanity drops in the dark. Find the light spots.
+  Below 30 Sanity, what you see may not be real.
+
+  Completing this level earns  ★★  on the title screen.
+  It is stored permanently.
 
 
 ------------------------------------------------------------------
-  THE TWO ENDINGS
+  ENDINGS
 ------------------------------------------------------------------
 
   LOST  (DEATH)
     A monster closes in. Harris does not make it out.
-    "Harris was not sent here. He was called."
     The case remains sealed.
 
-  CASE FILE CLOSED  (WIN)
+  CASE FILE CLOSED  (WIN -- Standard)
     Harris escapes the Containment Core with the evidence.
     A classified memo from the Dept. of Anomalous Research:
     the building has since been demolished.
     No transmitter was found. No anomaly confirmed on record.
     Harris's report was never filed.
 
+  NO MERCY -- COMPLETE  (WIN -- Secret Level)
+    All ten were found.
+    You walked every corridor of that place.
+    They were not supposed to be found.
+    You were not supposed to make it out.
+    [ WHAT YOU SAW CANNOT BE FILED AWAY ]
+
+  100% COMPLETE  (★★★ -- Insane Mode)
+    The full game cleared on the hardest difficulty.
+    The title screen is permanently altered.
+    The music is different now.
+    There is nothing left to unlock.
+    The case is closed. So is everything else.
+
 
 ------------------------------------------------------------------
-  ENVIRONMENTAL HAZARDS  --  NEW MECHANICS
+  ENVIRONMENTAL HAZARDS  --  MECHANICS
 ------------------------------------------------------------------
 
   CREAK TILES
@@ -414,9 +473,6 @@
   There is a short cooldown after each creak (roughly 3 seconds)
   so the same tile will not keep triggering repeatedly.
 
-  These tiles cannot be avoided once entered. Learn their
-  positions on each level and route around them.
-
 
   LOCKED SIDE ROOMS  --  KEYCARD
   ................................................................
@@ -431,22 +487,44 @@
     Level 4  :  Tile (3,  2)  --  near player spawn, northwest
     Level 5  :  Tile (3,  2)  --  northwest corner
 
-  HUD INDICATOR  (center of screen, below tapes):
-    KEYCARD NOT FOUND       -- keycard is still on the map
-    KEYCARD HELD [SPACE]    -- you have it; find the door
-    RESTRICTED ROOM: OPEN   -- room is open; search inside
-
-  TO OPEN THE LOCKED ROOM:
-    1. Pick up the keycard (walk over it).
-    2. Walk to the locked door (a gold padlock icon).
-    3. Press SPACE when you are near the door.
-
-  The room door and all interior tiles open permanently.
-  A classified lore document will spawn inside.
+  The locked room contains a classified lore document.
   Walk over the document to read it and add it to Field Notes.
 
   NOTE: On Levels 4-5, picking up the document causes a noise
   spike. Stand still immediately after collecting it.
+
+  NOTE ON DOCUMENT TEXT:
+    Read the documents carefully. On Normal difficulty and above,
+    certain words contain letters that should not be capitalized.
+    These are not formatting errors.
+
+
+  LOCKER ROOMS  (Secret Level only)
+  ................................................................
+
+  Lockers are scattered across the secret level.
+  Press SPACE near one to enter.
+
+  If the entity is far away -- it will search your last known
+  position, then wander. Exit when it moves away.
+
+  If the entity heard you enter -- it will come directly to the
+  locker and break it open. You will not survive this.
+
+  Distance from the locker determines whether it is safe to exit.
+  The game will tell you if it is too close.
+
+
+  LIGHT SANCTUARIES  (Secret Level only)
+  ................................................................
+
+  Scattered across the secret level are small glowing spots.
+  Walking through one restores 20% Sanity.
+  Each can only be used once per run.
+
+  Prioritize these when Sanity drops below 30.
+  Below 30 Sanity, hallucinations begin.
+  What you see in the dark may not be there.
 
 
   SCRIPTED EVENTS  --  ONE-TIME ATMOSPHERIC TRIGGERS
@@ -457,22 +535,19 @@
 
     DOOR SLAM
       A door slams somewhere deep in the building.
-      Causes brief camera shake. The Figure is not alerted
-      but your nerves will be.
+      Causes brief camera shake.
 
     LIGHT FLICKER
       The flashlight cuts out for 0.8 to 1.4 seconds.
       Your Sanity will drop during the blackout.
-      The light restores automatically if battery remains.
 
     SHAPE FLASH
       A dark shape appears briefly at the edge of the beam.
       Accompanied by a burst of static.
       Nothing is there when you reach the position.
-      (Figure levels only -- not present on Listener levels.)
+      (Figure levels only.)
 
   All scripted events fire only once per level load.
-  They will not repeat if you revisit the area.
 
 
 ------------------------------------------------------------------
@@ -495,32 +570,28 @@
     Both monsters avoid it entirely. Use it to recover.
 
   - Field Notes (press N) stores every lore document you find.
-    They contain survival hints written by the staff inside.
+    Read them. They contain more than lore.
 
 
   VS THE FIGURE (Levels 1-3):
 
   - Sprint only in emergencies. Stare back to freeze it briefly.
+  - On INSANE, staring only works twice. Then it comes anyway.
   - If screen edges glow RED, the Figure is within 5 tiles.
     Create distance immediately.
   - At Level 3, stay above 45 Sanity to prevent teleportation.
   - THE FIGURE LEARNS: If you visit the same corridor 3+ times,
-    that area becomes a "hot zone." The Figure will periodically
-    drift toward hot zones even while lurking.
-    Vary your routes. Do not pace the same hallway repeatedly.
-  - Avoid standing on CREAK TILES  --  they immediately push
-    the Figure into its aggressive state.
+    that area becomes a hot zone. Vary your routes.
+  - Avoid CREAK TILES -- they push the Figure into aggression.
 
 
   VS THE LISTENER (Levels 4-5):
 
   - NEVER sprint. It hears sprinting from across the entire map.
   - After every tape or document pickup, STAND STILL immediately.
-    The noise spike from pickups is significant.
-  - If the screen edges glow PURPLE, the Listener is alerted
-    and close. Stop all movement and wait.
+  - If the screen edges glow PURPLE, stop all movement and wait.
   - The Listener moves toward where it HEARD you last --
-    not where you are now. You can use this to mislead it.
+    not where you are now. Use this to mislead it.
   - Standing completely still will eventually cause it to
     lose interest and return to patrol.
 
@@ -530,20 +601,25 @@
   - Generates almost no noise: 0.28 per frame vs 1.2 for walking.
   - USE IT when the Listener is nearby and you must still move.
 
-  THE TWIST -- INVOLUNTARY BREATH:
+  INVOLUNTARY BREATH:
     While sneaking, Harris cannot hold his breath forever.
-    Every 3 to 6 seconds, an involuntary exhale creates a
-    noise spike of +7 to +15.
-    You cannot prevent it. You cannot time it.
-    On NORMAL, most spikes will not alert the Listener if your
-    noise level is already low.
+    Every 3 to 6 seconds, an involuntary exhale spikes noise.
     On HARD and INSANE, every breath can get you caught.
+    When the [C] SNEAKING label turns orange -- a breath is
+    imminent. Consider stopping and letting it pass.
 
-    The HUD shows "[C] SNEAKING" while active.
-    When the label turns orange and flashes -- a breath is
-    imminent. Consider stopping entirely and letting it pass.
 
-    Sneak is not silence. It is near-silence with a cost.
+  VS THE SECRET ENTITY:
+
+  - It does not have states. It chases. That is all it does.
+  - The only defense is a locker. Learn where they are first.
+  - If it is far away when you hide, it will search your last
+    position and wander. Wait for it to move away.
+  - If it heard you enter the locker, it will break in.
+    Exit the locker BEFORE hiding in that situation.
+  - It speeds up each time you find a body part.
+    Plan your route. Efficient is safer than fast.
+  - The fog of war is heavy. Keep your flashlight on.
 
 
 ------------------------------------------------------------------
@@ -554,43 +630,30 @@
 
   FILM GRAIN
     Persistent analog noise across all footage.
-    Refreshes every other frame. Intentional.
 
   CHROMATIC ABERRATION
-    Color fringing visible at screen edges (red left, cyan right).
-    Simulates lens distortion on the original camera unit.
+    Color fringing at screen edges (red left, cyan right).
 
   SHADOW CASTING
     The flashlight does not pass through walls.
-    Light is blocked by any solid structure.
-    Use corridors and doorways to create safe pockets of darkness.
     Monsters outside your beam cannot be seen.
     This works in your favor -- and against it.
 
-  VHS GLITCH EFFECTS  (INTRO / TITLE / HELP SCREENS)
+  FOG OF WAR  (Secret Level only)
+    The secret level is darker than anything in Levels 1-5.
+    A small ambient radius is always visible around Harris.
+    Beyond it: nothing. Keep the flashlight on.
+
+  100% COMPLETE TITLE SCREEN
+    If you have fully completed the game, the title screen
+    changes permanently. The background is different.
+    The music is different.
+    This is intentional.
+
+  VHS GLITCH EFFECTS
     Tracking error bands drift across the screen.
     Horizontal desync flashes simulate tape damage.
-    Color fringe echo overlaid on title text.
-    REC counter in the corner timestamps the footage.
     These are purely aesthetic. The footage is from 1994.
-
-  ANIMATED ENVIRONMENT
-    The building is alive -- or something inside it is.
-
-    WALL DRIPS
-      Moisture seeps down wall-adjacent tiles throughout the
-      building. Small animated water streaks appear near walls
-      and reset as they reach the floor.
-
-    LIGHT FLICKER PATCHES
-      On open floor areas, dying overhead lights create subtle
-      pulsing brightness patches on the floor. The frequency
-      and phase differ per patch -- some flicker fast, some slow.
-
-    INDOOR RAIN BLEEDING  (Levels 1, 2, 3 only)
-      On upper-level areas, faint rain streaks fall through
-      broken ceiling tiles. The rain outside bleeds in.
-      The structural integrity of the building is compromised.
 
 
 ------------------------------------------------------------------
@@ -613,5 +676,5 @@
 
 ==================================================================
   CASE FILE 1994  --  NOV 5, 1994  --  BLOCK 7  --  ALDRIC BLDG
-  STATUS: CLASSIFIED
+  STATUS: CLASSIFIED  --  v1.5
 ==================================================================
