@@ -631,6 +631,7 @@ document.addEventListener('keydown',e=>{
   if(e.key.toLowerCase()==='r'&&gs==='playing'&&!paused){rechargeFlash();return;}
   if(e.key==='s'||e.key==='S'){if(gs==='title'){gs='settings';settingsInsultShown=false;}return;}
   if(e.key==='h'||e.key==='H'){if(gs==='title'){gs='help';}return;}
+  if((e.key==='p'||e.key==='P')&&gs==='title'){gs='patchnotes';return;}
   if(e.key==='n'||e.key==='N'){if(!notesOpen){notesSelIdx=0;notesTab='docs';}notesOpen=!notesOpen;return;}
   if(notesOpen&&e.key==='Tab'){notesTab=notesTab==='docs'?'briefing':'docs';e.preventDefault?.();return;}
   if(notesOpen&&notesTab==='docs'&&(e.key==='ArrowDown'||e.key==='ArrowUp')){notesSelIdx=(notesSelIdx+(e.key==='ArrowDown'?1:-1)+Math.max(1,collectedDocs.length))%Math.max(1,collectedDocs.length);e.preventDefault?.();return;}
@@ -644,7 +645,7 @@ document.addEventListener('keydown',e=>{
     if(e.key==='6'&&godModeUnlocked){difficulty='godmode';settingsInsultShown=false;return;}
   }
   if(e.key==='Escape'&&notesOpen){notesOpen=false;return;}
-  if(e.key==='Escape'&&gs==='help'){gs='title';startTitleMusic();return;}
+  if(e.key==='Escape'&&(gs==='help'||gs==='patchnotes')){gs='title';startTitleMusic();return;}
   if((e.key==='p'||e.key==='P'||e.key==='Escape')&&(gs==='playing'||paused)){paused=!paused;}
   e.preventDefault?.();
 },{passive:false});
@@ -876,7 +877,7 @@ function loadLevel(n){
     });
   })();
   batteryPickups=[];
-  if(n===0){batteryPickups.push({x:7.5*TILE,y:8.5*TILE,taken:false});briefingLog=[];notesTab='docs';}
+  if(n===0){if(difficulty==='veryeasy')batteryPickups.push({x:7.5*TILE,y:8.5*TILE,taken:false});briefingLog=[];notesTab='docs';}
   if(!LEVELS[n].prelude){
     const battCount=difficulty==='insane'?1:difficulty==='hard'?1:difficulty==='veryeasy'?4:2;
     const usedPos=tapes.map(t=>[t.x/TILE,t.y/TILE]);
@@ -1377,7 +1378,7 @@ function onAct(){
   }
   if(evidenceActive){evidenceActive=false;evidenceTimer=0;return;}
   if(gs==='title'){titleMusicStarted=false;startBGMusic();gs='playing';lvlN=0;loadLevel(0);return;}
-  if(gs==='help'){gs='title';startTitleMusic();return;}
+  if(gs==='help'||gs==='patchnotes'){gs='title';startTitleMusic();return;}
   if(gs==='dead'){paused=false;gs='playing';lvlN=0;loadLevel(0);return;}
   if(gs==='win'){if(!creditsActive){creditsActive=true;return;}paused=false;creditsActive=false;gs='title';startTitleMusic();return;}
   if(gs==='transition'&&fr-transFr>90){paused=false;lvlN++;loadLevel(lvlN);gs='playing';return;}
@@ -2003,7 +2004,7 @@ function drwTitle(){
   // Bottom bar hints
   ctx.textAlign='center';
   ctx.fillStyle='rgba(155,128,50,0.72)';ctx.font='bold 11px monospace';
-  ctx.fillText('[ S ]  SETTINGS    [ H ]  INSTRUCTIONS    [ N ]  FIELD NOTES',W/2,H-8);
+  ctx.fillText('[ S ]  SETTINGS    [ H ]  INSTRUCTIONS    [ P ]  PATCH NOTES',W/2,H-8);
   drwVHSHorror();
 }
 function drwHelp(){
@@ -2064,6 +2065,70 @@ function drwHelp(){
   ctx.textAlign='left';ctx.fillStyle='rgba(188,160,76,0.40)';ctx.font='9px monospace';
   const hs=fr/60|0,hmm=hs/60|0,hss=(hs%60).toString().padStart(2,'0');
   ctx.fillText(`REC 1994-11-07  00:${hmm.toString().padStart(2,'0')}:${hss}`,bx+18,by+bh-6);
+  drwVHSHorror();
+}
+function drwPatchNotes(){
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+  ctx.drawImage(vigC,0,0);
+  const bx=W/2-350,by=22,bw=700,bh=H-44;
+  ctx.fillStyle='rgba(5,4,2,0.95)';ctx.fillRect(bx,by,bw,bh);
+  ctx.strokeStyle='rgba(185,152,52,0.55)';ctx.lineWidth=1;ctx.strokeRect(bx,by,bw,bh);
+  for(let s=by+2;s<by+bh;s+=4){ctx.fillStyle='rgba(0,0,0,0.15)';ctx.fillRect(bx+1,s,bw-2,2);}
+  ctx.fillStyle='rgba(185,152,52,0.10)';ctx.fillRect(bx,by,bw,22);
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(198,162,58,0.95)';ctx.font='bold 11px monospace';
+  ctx.fillText('CASE FILE 1994  —  PATCH NOTES',W/2,by+14);
+  ctx.strokeStyle='rgba(185,152,52,0.28)';ctx.beginPath();ctx.moveTo(bx+14,by+24);ctx.lineTo(bx+bw-14,by+24);ctx.stroke();
+  const lx=bx+28,rx=W/2+18,lineH=14;
+  let ly=by+42;
+  const ver=(v,date,col)=>{
+    ctx.textAlign='left';
+    ctx.fillStyle=col||'rgba(205,172,80,0.92)';ctx.font='bold 11px monospace';
+    ctx.fillText(v,lx,ly);
+    ctx.fillStyle='rgba(140,120,55,0.55)';ctx.font='9px monospace';
+    ctx.fillText(date,lx+ctx.measureText(v).width+10,ly);
+    ly+=4;
+    ctx.strokeStyle='rgba(185,152,52,0.22)';ctx.lineWidth=.8;
+    ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(bx+bw-28,ly);ctx.stroke();
+    ly+=lineH;
+  };
+  const entry=(sym,txt,col)=>{
+    ctx.textAlign='left';ctx.fillStyle=col||'rgba(200,180,130,0.82)';ctx.font='10px monospace';
+    ctx.fillText(sym+'  '+txt,lx+12,ly);ly+=lineH;
+  };
+  const gap=()=>{ly+=8;};
+  // v1.3
+  ver('v1.3  —  FIELD NOTES UPDATE','Sep 2025');
+  entry('+','Briefing tab added to Field Notes  [ N → TAB to switch ]');
+  entry('+','Harris\'s Level 0 observations logged and re-readable in Briefing');
+  entry('+','Instructions now re-accessible from title screen  [ H key ]');
+  entry('+','Instructions close back to title instead of auto-starting game');
+  entry('▲','Fixed: dialogue overlap on Level 0 (Very Easy mode)');
+  entry('▲','Fixed: dialogue messages displayed too briefly — extended to 8s');
+  gap();
+  // v1.2
+  ver('v1.2  —  VERY EASY MODE','Sep 2025');
+  entry('+','Added Very Easy difficulty  (larger stamina & sanity pools, +10% speed)');
+  entry('+','Level 0 tutorial tips with commentary for Very Easy players');
+  entry('+','Gift flashlight battery on Level 0  (Very Easy only)');
+  entry('+','Win screen special message for Very Easy completion');
+  gap();
+  // v1.1
+  ver('v1.1  —  STABILITY FIXES','Sep 2025');
+  entry('▲','Fixed: inconsistent movement speed — delta-time physics applied');
+  entry('▲','Fixed: mouse aim mismatch after window scaling');
+  entry('▲','Fixed: "monster still moving" warning invisible during cipher');
+  entry('▲','Fixed: locked room document not visible after keycard pickup');
+  entry('▲','Game screen now scales to fill the viewport on all devices');
+  gap();
+  // v1.0
+  ver('v1.0  —  INITIAL RELEASE','Sep 2025','rgba(140,170,120,0.80)');
+  entry('+','Case File 1994 — Nov 5, 1994. Aldric Building, Block 7.');
+  entry('+','5 levels, 2 entity types (The Figure, The Listener)');
+  entry('+','5 difficulty modes: Very Easy, Easy, Normal, Hard, Insane');
+  gap();
+  if(Math.sin(fr*.075)>0){ctx.fillStyle='rgba(195,165,72,0.82)';ctx.font='bold 12px monospace';ctx.textAlign='center';ctx.fillText('▶  SPACE / CLICK / ESC  TO CLOSE  ◀',W/2,by+bh-16);}
+  if(fr%60<42){ctx.fillStyle='rgba(215,44,44,0.75)';ctx.beginPath();ctx.arc(bx+10,by+bh-14,3.5,0,Math.PI*2);ctx.fill();}
   drwVHSHorror();
 }
 function drwNotes(){
@@ -2546,6 +2611,7 @@ function loop(now=performance.now()){
   if(gs==='settings'){drwSettings();requestAnimationFrame(loop);return;}
   if(gs==='title'){drwTitle();requestAnimationFrame(loop);return;}
   if(gs==='help'){drwHelp();requestAnimationFrame(loop);return;}
+  if(gs==='patchnotes'){drwPatchNotes();requestAnimationFrame(loop);return;}
   if(gs==='transition'){drwTransition();requestAnimationFrame(loop);return;}
   ctx.save();if(shk>0)ctx.translate(skx,sky);
   ctx.fillStyle='#0d0a07';ctx.fillRect(0,0,W,H);
