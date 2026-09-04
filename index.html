@@ -607,14 +607,18 @@ function updChaser(){
       if(chaserLastSeen){
         const sd=Math.hypot(F.x-chaserLastSeen.x,F.y-chaserLastSeen.y);
         if(sd>TILE){const nx=(chaserLastSeen.x-F.x)/sd,ny=(chaserLastSeen.y-F.y)/sd;F.x+=nx*spd*_dt;F.y+=ny*spd*_dt;resolve(F);}
-        else{chaserLastSeen=null;chaserSearchTimer=180+Math.random()*120;}
+        else{chaserLastSeen=null;chaserSearchTimer=240+Math.random()*180;}
       } else {
         chaserSearchTimer-=_dt;
         if(chaserSearchTimer<=0){
+          // Wander to a random floor tile far from locker
           let px,py,tries=0;
-          do{px=(1+Math.floor(Math.random()*(MCOLS-2))+.5)*TILE;py=(1+Math.floor(Math.random()*(MROWS-2))+.5)*TILE;tries++;}
-          while(MAP[Math.floor(py/TILE)]&&MAP[Math.floor(py/TILE)][Math.floor(px/TILE)]!==0&&tries<40);
-          chaserLastSeen={x:px,y:py};chaserSearchTimer=120;
+          do{
+            px=(1+Math.floor(Math.random()*(MCOLS-2))+.5)*TILE;
+            py=(1+Math.floor(Math.random()*(MROWS-2))+.5)*TILE;
+            tries++;
+          }while(tries<50&&(MAP[Math.floor(py/TILE)]?.[Math.floor(px/TILE)]!==0||(lockerPos&&Math.hypot(px-lockerPos.x,py-lockerPos.y)<TILE*4)));
+          chaserLastSeen={x:px,y:py};chaserSearchTimer=180+Math.random()*120;
         }
       }
     }
@@ -1565,14 +1569,15 @@ function onAct(){
       const lk=L6.lockerTiles?.find(lt=>Math.hypot(P.x-lt[0]*TILE,P.y-lt[1]*TILE)<TILE*1.2);
       if(lk){
         const chaserDist=Math.hypot(F.x-lk[0]*TILE,F.y-lk[1]*TILE);
+        const prevX=P.x,prevY=P.y;
         inLocker=true;lockerPos={x:lk[0]*TILE,y:lk[1]*TILE};
         P.x=lk[0]*TILE;P.y=lk[1]*TILE;
         if(chaserDist<TILE*3.5){
           chaserState='alert_locker';lockerBreakTimer=300;
           msg='⚠ IT HEARD YOU GET IN.';msgFr=fr;
-          if(LEVELS[lvlN].useListener)noiseLevel=Math.min(100,noiseLevel+60);
         } else {
-          chaserState='search';chaserLastSeen={x:P.x,y:P.y};chaserSearchTimer=240;
+          // Chaser goes to where player was last seen — NOT the locker
+          chaserState='search';chaserLastSeen={x:prevX,y:prevY};chaserSearchTimer=0;
           msg='Hiding. Stay still.';msgFr=fr;
         }
         return;
