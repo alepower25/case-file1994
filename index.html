@@ -1527,8 +1527,8 @@ function drwTapes(cx,cy){
   });
 }
 function drwDocs(cx,cy){
-  docs.forEach(d=>{
-    if(d.taken)return;const sx=d.x-cx,sy=d.y-cy;if(sx<-60||sx>W+60||sy<-60||sy>H+60)return;
+  const drawDoc=(d,cx2,cy2)=>{
+    if(d.taken)return;const sx=d.x-cx2,sy=d.y-cy2;if(sx<-60||sx>W+60||sy<-60||sy>H+60)return;
     const pulse=.5+.5*Math.sin(fr*.05);
     const g=ctx.createRadialGradient(sx,sy,0,sx,sy,18*pulse);
     g.addColorStop(0,'rgba(140,160,220,0.24)');g.addColorStop(1,'rgba(0,0,0,0)');
@@ -1537,7 +1537,9 @@ function drwDocs(cx,cy){
     ctx.fillStyle='rgba(20,22,30,0.6)';ctx.fillRect(sx-7,sy-10,14,10);
     for(let i=0;i<3;i++){ctx.fillStyle='rgba(160,170,200,0.45)';ctx.fillRect(sx-6,sy-9+i*3,12,1);}
     ctx.fillStyle='rgba(160,180,230,0.72)';ctx.font='6px monospace';ctx.textAlign='center';ctx.fillText('DOC',sx,sy-16);
-  });
+  };
+  docs.forEach(d=>drawDoc(d,cx,cy));
+  if(lockedRoomDoc&&lockedRoomOpen)drawDoc(lockedRoomDoc,cx,cy);
 }
 function drwBatts(cx,cy){
   batteryPickups.forEach(b=>{
@@ -2447,8 +2449,8 @@ function drwExitPuzzle(){
     ctx.strokeStyle='rgba(182,148,50,0.28)';ctx.strokeRect(bx+20,by+158,bw-40,10);
     const secs=Math.ceil(exitPuzzleTimer/60),mm=Math.floor(secs/60),ss=(secs%60).toString().padStart(2,'0');
     ctx.fillStyle='rgba(188,160,70,0.65)';ctx.font='9px monospace';ctx.fillText(`${mm}:${ss} REMAINING`,W/2,by+178);
-    ctx.fillStyle='rgba(188,70,70,0.70)';ctx.font='8px monospace';
-    ctx.fillText('WARNING: THE FIGURE IS STILL MOVING',W/2,by+192);
+    ctx.fillStyle='rgba(210,60,60,0.92)';ctx.font='bold 10px monospace';
+    ctx.fillText(LEVELS[lvlN]?.useListener?'⚠  WARNING: THE LISTENER IS STILL ACTIVE':'⚠  WARNING: THE FIGURE IS STILL MOVING',W/2,by+192);
   }
   if(exitPuzzleResult==='correct'){ctx.fillStyle='rgba(70,210,70,0.95)';ctx.font='bold 16px monospace';ctx.fillText('✓  ACCESS GRANTED',W/2,by+bh-18);}
   ctx.drawImage(scanC,0,0);
