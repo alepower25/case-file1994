@@ -474,10 +474,10 @@ function updNoise(){
   if(!LEVELS[lvlN]||!LEVELS[lvlN].useListener)return;
   const moving=Math.abs(P.vx)>.05||Math.abs(P.vy)>.05;
   const nMult=difficulty==='veryeasy'?.35:difficulty==='godmode'?0:difficulty==='insane'?1.5:1;
-  if(P.sprinting)noiseLevel=Math.min(100,noiseLevel+5*nMult);
-  else if(P.sneaking&&moving)noiseLevel=Math.min(100,noiseLevel+.28*nMult);
-  else if(moving)noiseLevel=Math.min(100,noiseLevel+1.2*nMult);
-  else noiseLevel=Math.max(0,noiseLevel-2.5);
+  if(P.sprinting)noiseLevel=Math.min(100,noiseLevel+5*nMult*_dt);
+  else if(P.sneaking&&moving)noiseLevel=Math.min(100,noiseLevel+.28*nMult*_dt);
+  else if(moving)noiseLevel=Math.min(100,noiseLevel+1.2*nMult*_dt);
+  else noiseLevel=Math.max(0,noiseLevel-2.5*_dt);
 }
 function updListener(){
   if(!LEVELS[lvlN]||!LEVELS[lvlN].useListener)return;
@@ -504,7 +504,7 @@ function updListener(){
     LIS.opacity=Math.min(0.88,LIS.opacity+.025);
     const tx=lastNoisePos.x,ty=lastNoisePos.y;
     const d2=Math.hypot(LIS.x-tx,LIS.y-ty);
-    if(d2>4){const nx=(tx-LIS.x)/d2,ny=(ty-LIS.y)/d2;LIS.x+=nx*spd;LIS.y+=ny*spd;resolve(LIS);}
+    if(d2>4){const nx=(tx-LIS.x)/d2,ny=(ty-LIS.y)/d2;LIS.x+=nx*spd*_dt;LIS.y+=ny*spd*_dt;resolve(LIS);}
     // Scream when first alerted
     if(!lisScreamed){lisScreamed=true;try{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sawtooth';o.frequency.setValueAtTime(320,A.currentTime);o.frequency.exponentialRampToValueAtTime(80,A.currentTime+.6);g.gain.setValueAtTime(.12,A.currentTime);g.gain.exponentialRampToValueAtTime(.0001,A.currentTime+.7);o.start();o.stop(A.currentTime+.75);}catch(e){}}
     if(LIS.stepT--<=0){LIS.stepT=12;try{tone(80+Math.random()*20,.09,'sawtooth',.032);}catch(e){}}
@@ -521,7 +521,7 @@ function updListener(){
       LIS.patrolTarget={x:px,y:py};
     }
     const nx2=(LIS.patrolTarget.x-LIS.x)/Math.max(1,pd),ny2=(LIS.patrolTarget.y-LIS.y)/Math.max(1,pd);
-    LIS.x+=nx2*spd;LIS.y+=ny2*spd;resolve(LIS);
+    LIS.x+=nx2*spd*_dt;LIS.y+=ny2*spd*_dt;resolve(LIS);
   }
   // Contact = death
   if(dist<LIS.radius+P.radius+4){
@@ -676,6 +676,7 @@ c.addEventListener('click',()=>{
 
 // ── STATE ─────────────────────────────────────────────────────────────
 let gs='intro',fr=0,lvlN=0;
+let _lastT=0,_dt=1;
 let introSlide=0;
 let deadFr=0,winFr=0,transFr=0;let creditsActive=false;
 let glitch=0,trackGlitch=0;
@@ -984,7 +985,7 @@ function updFigure(){
     if(figLearnTarget&&!looking){
       const dtl=Math.hypot(F.x-figLearnTarget.x,F.y-figLearnTarget.y);
       if(dtl<TILE){figLearnTarget=null;}
-      else{F.x+=(figLearnTarget.x-F.x)/dtl*.7;F.y+=(figLearnTarget.y-F.y)/dtl*.7;resolve(F);}
+      else{F.x+=(figLearnTarget.x-F.x)/dtl*.7*_dt;F.y+=(figLearnTarget.y-F.y)/dtl*.7*_dt;resolve(F);}
     }
 
     // STARE-BACK: very close and player is looking → it doesn't immediately vanish.
@@ -1050,7 +1051,7 @@ function updFigure(){
     // Stuttering movement — skips every other frame — stop-motion, deeply wrong
     if(fr%2===0){
       const sp=(gL()===2?4.4:3.8)*(difficulty==='insane'?2.3:difficulty==='hard'?1.65:difficulty==='veryeasy'?.45:difficulty==='easy'?.7:.95)*safeRoomPenalty;
-      if(dist>1){F.x+=(P.x-F.x)/dist*sp;F.y+=(P.y-F.y)/dist*sp;resolve(F);}
+      if(dist>1){F.x+=(P.x-F.x)/dist*sp*_dt;F.y+=(P.y-F.y)/dist*sp*_dt;resolve(F);}
     }
     if(fr%14===0&&dist<TILE*8)sfxFigureStep();
     // Contact = instant death, no scream
@@ -1188,9 +1189,9 @@ function updPlayer(){
       if(P.sneaking){sfxSneakStep();P.stepT=32;}
       else{sfxStep();dust(P.x,P.y);P.stepT=P.sprinting?10:20;}
     }
-    if(P.sprinting)P.stamina=Math.max(0,P.stamina-.52);
-    else P.stamina=Math.min(100,P.stamina+.06);
-  } else {P.vx=0;P.vy=0;P.sneaking=false;P.stamina=Math.min(100,P.stamina+.22);}
+    if(P.sprinting)P.stamina=Math.max(0,P.stamina-.52*_dt);
+    else P.stamina=Math.min(100,P.stamina+.06*_dt);
+  } else {P.vx=0;P.vy=0;P.sneaking=false;P.stamina=Math.min(100,P.stamina+.22*_dt);}
   // Sneak breath: involuntary noise spike while sneaking on Listener levels
   if(LEVELS[lvlN]?.useListener&&P.sneaking&&difficulty!=='godmode'){
     if(sneakBreathTimer<=0){sneakBreathTimer=200+Math.random()*180;}
@@ -1205,7 +1206,7 @@ function updPlayer(){
     try{const buf=A.createBuffer(1,Math.floor(A.sampleRate*.4),A.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++){const t=i/A.sampleRate;d[i]=(Math.random()*2-1)*(t<.05?t/.05:Math.exp(-(t-.05)*5))*.55;}const s=A.createBufferSource(),g=A.createGain(),bp=A.createBiquadFilter();bp.type='bandpass';bp.frequency.value=800;bp.Q.value=2;s.buffer=buf;s.connect(bp);bp.connect(g);g.connect(mg);g.gain.value=.22;s.start();}catch(e){}
   }
   if(P.stamina>25)staminaExhausted=false;
-  P.x+=P.vx;P.y+=P.vy;resolve(P);
+  P.x+=P.vx*_dt;P.y+=P.vy*_dt;resolve(P);
   if(P.flashOn&&!LEVELS[lvlN].prelude){const bDrain=difficulty==='godmode'?0:difficulty==='insane'?.034:difficulty==='hard'?.024:difficulty==='veryeasy'?.004:difficulty==='easy'?.010:.016;P.battery=Math.max(0,P.battery-bDrain);if(P.battery===0)P.flashOn=false;}
   if(P.battery<20&&!LEVELS[lvlN].prelude)battWarnFlash=(battWarnFlash+1)%120;else battWarnFlash=0;
   if(!LEVELS[lvlN].prelude){
@@ -2454,7 +2455,8 @@ function drwExitPuzzle(){
 }
 
 // ── MAIN LOOP ─────────────────────────────────────────────────────────
-function loop(){
+function loop(now=performance.now()){
+  _dt=_lastT?Math.min((now-_lastT)/16.667,2.5):1;_lastT=now;
   fr++;
   ambT++;if(ambT>=192){ambT=0;if(A.state==='running')tickAmb();}
   if(gs==='playing'&&!paused){
