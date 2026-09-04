@@ -2573,20 +2573,27 @@ function drwSettings(){
     ctx.fillStyle=desc.lineCol;ctx.font='9px monospace';
     desc.lines.forEach((l,i)=>ctx.fillText(l,W/2,ph+26+i*12));
   }
-  // Back
-  ctx.fillStyle='rgba(145,120,50,0.55)';ctx.font='9px monospace';
-  ctx.fillText('[ ESC ]  BACK',W/2,H-22);
   // Difficulty applied text
   ctx.fillStyle=difficulty==='godmode'?'rgba(220,180,0,0.6)':difficulty==='insane'?'rgba(160,60,220,0.6)':'rgba(100,85,40,0.42)';ctx.font='8px monospace';
   ctx.fillText(`CURRENT: ${difficulty.toUpperCase()}`,W/2,H*.84);
-  // Password field for No Mercy unlock
+  // Secret code field
+  const pfY=H*.88,pfW=260,pfX=W/2-pfW/2;
   if(noMercyUnlocked){
-    ctx.fillStyle='rgba(220,40,40,0.90)';ctx.font='bold 9px monospace';ctx.textAlign='center';
-    ctx.fillText('[ NO MERCY UNLOCKED ]',W/2,H-8);
+    ctx.fillStyle='rgba(14,4,4,0.88)';ctx.fillRect(pfX,pfY-14,pfW,28);
+    ctx.strokeStyle='rgba(200,30,30,0.70)';ctx.lineWidth=1;ctx.strokeRect(pfX,pfY-14,pfW,28);
+    ctx.fillStyle='rgba(220,60,60,0.95)';ctx.font='bold 10px monospace';ctx.textAlign='center';
+    ctx.fillText('★  NO MERCY MODE UNLOCKED  ★',W/2,pfY+4);
   } else {
-    ctx.fillStyle='rgba(100,80,40,0.55)';ctx.font='8px monospace';ctx.textAlign='center';
-    ctx.fillText('PASSWORD: '+settingsPwd.replace(/./g,'*'),W/2,H-8);
+    ctx.fillStyle='rgba(10,8,4,0.82)';ctx.fillRect(pfX,pfY-14,pfW,28);
+    ctx.strokeStyle='rgba(100,85,50,0.45)';ctx.lineWidth=1;ctx.strokeRect(pfX,pfY-14,pfW,28);
+    ctx.fillStyle='rgba(120,100,55,0.65)';ctx.font='9px monospace';ctx.textAlign='center';
+    const stars=settingsPwd.replace(/./g,'★');
+    const disp=settingsPwd.length>0?`SECRET CODE: ${stars}${fr%60<30?'▮':''}  ( ENTER )`:'SECRET CODE:  type here then ENTER';
+    ctx.fillText(disp,W/2,pfY+4);
   }
+  // Back
+  ctx.fillStyle='rgba(145,120,50,0.55)';ctx.font='9px monospace';ctx.textAlign='center';
+  ctx.fillText('[ ESC ]  BACK',W/2,H*.96);
 }
 function drwMiniMap(){
   const tw=4,th=4,mw=MCOLS*tw,mh=MROWS*th,mx=W-mw-10,my=H-mh-14;
