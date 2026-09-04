@@ -1256,17 +1256,19 @@ function updPlayer(){
   }
   // Level 0 — Harris ambient narration (all difficulties)
   if(lvlN===0){
-    if(!scriptedDone.has('l0_a')&&fr>120){scriptedDone.add('l0_a');msg='Nov 5, 1994. 3:08 AM. I parked two blocks out. The building has been sealed for seven years. The tip said the frequency was still active.';msgFr=fr;}
-    if(!scriptedDone.has('l0_b')&&Math.hypot(P.x-8*TILE,P.y-9*TILE)<TILE*3.5){scriptedDone.add('l0_b');msg='The rain started before I arrived. It has not let up. There is something wrong with the air here. Like pressure before a storm that already happened.';msgFr=fr;}
-    if(!scriptedDone.has('l0_c')&&Math.hypot(P.x-3.5*TILE,P.y-6*TILE)<TILE*2.5&&scriptedDone.has('l0_b')){scriptedDone.add('l0_c');msg='Guardhouse. Old security booth. The light is still on inside. Something is still running. That should not be possible.';msgFr=fr;}
-    if(!scriptedDone.has('l0_d')&&Math.hypot(P.x-13*TILE,P.y-11*TILE)<TILE*3){scriptedDone.add('l0_d');msg='Department records: no entry logged since November 1987. Forty-seven workers. None listed as exiting. The file was sealed the same day.';msgFr=fr;}
-    if(!scriptedDone.has('l0_e')&&Math.hypot(P.x-13.5*TILE,P.y-14*TILE)<TILE*2){scriptedDone.add('l0_e');msg='The door is not locked. It should be locked. The case file said the building was sealed. Locks work from the outside. This one is open from the inside.';msgFr=fr;}
-  }
-  // Very Easy — Level 0 crybaby tips
-  if(lvlN===0&&difficulty==='veryeasy'){
-    if(!scriptedDone.has('ve0')&&fr>300){scriptedDone.add('ve0');msg='[VERY EASY] The monster cannot reach you out here. You are safe. This is the tutorial. Try not to be scared of the rain.';msgFr=fr;}
-    if(!scriptedDone.has('ve1')&&scriptedDone.has('l0_c')&&!scriptedDone.has('ve1')){scriptedDone.add('ve1');msg='[VERY EASY] The key is in that guardhouse. Normal players find it in 10 seconds. You will get there. Probably.';msgFr=fr;}
-    if(!scriptedDone.has('ve2')&&scriptedDone.has('l0_e')){scriptedDone.add('ve2');msg='[VERY EASY] This is the Aldric Building entrance. Real dread starts inside. Good luck. You will need it more than Normal players.';msgFr=fr;}
+    const _msgFree=!msg||fr-msgFr>460;
+    if(_msgFree){
+      if(!scriptedDone.has('l0_a')&&fr>120){scriptedDone.add('l0_a');msg='Nov 5, 1994. 3:08 AM. I parked two blocks out. The building has been sealed for seven years. The tip said the frequency was still active.';msgFr=fr;}
+      else if(!scriptedDone.has('l0_b')&&Math.hypot(P.x-8*TILE,P.y-9*TILE)<TILE*3.5){scriptedDone.add('l0_b');msg='The rain started before I arrived. It has not let up. There is something wrong with the air here. Like pressure before a storm that already happened.';msgFr=fr;}
+      else if(!scriptedDone.has('l0_c')&&Math.hypot(P.x-3.5*TILE,P.y-6*TILE)<TILE*2.5){scriptedDone.add('l0_c');msg='Guardhouse. Old security booth. The light is still on inside. Something is still running. That should not be possible.';msgFr=fr;}
+      else if(!scriptedDone.has('l0_d')&&Math.hypot(P.x-13*TILE,P.y-11*TILE)<TILE*3){scriptedDone.add('l0_d');msg='Department records: no entry logged since November 1987. Forty-seven workers. None listed as exiting. The file was sealed the same day.';msgFr=fr;}
+      else if(!scriptedDone.has('l0_e')&&Math.hypot(P.x-13.5*TILE,P.y-14*TILE)<TILE*2){scriptedDone.add('l0_e');msg='The door is not locked. It should be locked. The case file said the building was sealed. Locks work from the outside. This one is open from the inside.';msgFr=fr;}
+      else if(difficulty==='veryeasy'){
+        if(!scriptedDone.has('ve0')&&fr>300){scriptedDone.add('ve0');msg='[VERY EASY] The monster cannot reach you out here. You are safe. Try not to be scared of the rain.';msgFr=fr;}
+        else if(!scriptedDone.has('ve1')&&scriptedDone.has('l0_c')){scriptedDone.add('ve1');msg='[VERY EASY] The key is in that guardhouse. Normal players find it in under 10 seconds. Take your time.';msgFr=fr;}
+        else if(!scriptedDone.has('ve2')&&scriptedDone.has('l0_e')){scriptedDone.add('ve2');msg='[VERY EASY] You are at the Aldric Building entrance. Real dread starts inside. Good luck. You will need it more than Normal players.';msgFr=fr;}
+      }
+    }
   }
   // Tape proximity beep
   if(!LEVELS[lvlN].prelude){
@@ -1782,8 +1784,8 @@ function drwHUD(){
     ctx.fillStyle='rgba(0,0,0,0.50)';ctx.fillRect(W/2-cpw/2-4,28,cpw+8,13);
     collectedClues.forEach((cl,i)=>{ctx.fillStyle='rgba(118,188,118,0.68)';ctx.font='7px monospace';ctx.textAlign='center';ctx.fillText(cl,W/2+(i-(collectedClues.length-1)/2)*sp,38);});
   }
-  if(msg&&fr-msgFr<320){
-    const a=Math.min(1,(fr-msgFr)/20)*Math.min(1,(320-(fr-msgFr))/30);
+  if(msg&&fr-msgFr<500){
+    const a=Math.min(1,(fr-msgFr)/20)*Math.min(1,(500-(fr-msgFr))/30);
     ctx.fillStyle=`rgba(0,0,0,${.82*a})`;ctx.fillRect(18,H-90,W-36,76);
     ctx.strokeStyle=`rgba(182,146,48,${.5*a})`;ctx.lineWidth=1;ctx.strokeRect(18,H-90,W-36,76);
     ctx.fillStyle=`rgba(188,150,48,${a})`;ctx.font='bold 9px monospace';ctx.textAlign='left';ctx.fillText('▶ RECOVERED AUDIO:',26,H-76);
