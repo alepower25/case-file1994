@@ -17,7 +17,7 @@ const W=960,H=640,TILE=72;
 const c=document.getElementById('c');
 c.width=W;c.height=H;
 const ctx=c.getContext('2d');
-function fitCanvas(){const s=Math.min(window.innerWidth/W,window.innerHeight/H,1);c.style.transform=`scale(${s})`;c.style.transformOrigin='center center';}
+function fitCanvas(){const s=Math.min(window.innerWidth/W,window.innerHeight/H);c.style.transform=`scale(${s})`;c.style.transformOrigin='center center';}
 fitCanvas();window.addEventListener('resize',fitCanvas);
 
 // ── PRE-BAKED OVERLAYS ────────────────────────────────────────────────
