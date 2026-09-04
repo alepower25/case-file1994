@@ -1181,7 +1181,8 @@ function updPlayer(){
   if(K['a']||K['arrowleft'])dx-=1;if(K['d']||K['arrowright'])dx+=1;
   P.sprinting=!!(K['shift']&&P.stamina>0&&(dx||dy)&&!K['c']);
   P.sneaking=!!(K['c']&&(dx||dy)&&!P.sprinting);
-  const spd=P.sprinting?P.speed*1.45:P.sneaking?P.speed*.62:P.speed;
+  const spdBase=P.speed*(difficulty==='veryeasy'?1.1:1);
+  const spd=P.sprinting?spdBase*1.45:P.sneaking?spdBase*.62:spdBase;
   if(dx||dy){
     const l=Math.sqrt(dx*dx+dy*dy);P.vx=dx/l*spd;P.vy=dy/l*spd;
     P.stepT--;
@@ -1189,9 +1190,11 @@ function updPlayer(){
       if(P.sneaking){sfxSneakStep();P.stepT=32;}
       else{sfxStep();dust(P.x,P.y);P.stepT=P.sprinting?10:20;}
     }
-    if(P.sprinting)P.stamina=Math.max(0,P.stamina-.52*_dt);
-    else P.stamina=Math.min(100,P.stamina+.06*_dt);
-  } else {P.vx=0;P.vy=0;P.sneaking=false;P.stamina=Math.min(100,P.stamina+.22*_dt);}
+    const stDrain=difficulty==='veryeasy'?.15:.52;
+  const stRec=difficulty==='veryeasy'?.18:.06;
+  if(P.sprinting)P.stamina=Math.max(0,P.stamina-stDrain*_dt);
+    else P.stamina=Math.min(100,P.stamina+stRec*_dt);
+  } else {P.vx=0;P.vy=0;P.sneaking=false;P.stamina=Math.min(100,P.stamina+(difficulty==='veryeasy'?.55:.22)*_dt);}
   // Sneak breath: involuntary noise spike while sneaking on Listener levels
   if(LEVELS[lvlN]?.useListener&&P.sneaking&&difficulty!=='godmode'){
     if(sneakBreathTimer<=0){sneakBreathTimer=200+Math.random()*180;}
@@ -1211,7 +1214,7 @@ function updPlayer(){
   if(P.battery<20&&!LEVELS[lvlN].prelude)battWarnFlash=(battWarnFlash+1)%120;else battWarnFlash=0;
   if(!LEVELS[lvlN].prelude){
     if(P.flashOn&&P.battery>0){P.sanity=Math.min(100,P.sanity+.06);}
-    else{P.sanity=Math.max(0,P.sanity-(difficulty==='godmode'?0:difficulty==='veryeasy'?.01:.038));}
+    else{P.sanity=Math.max(0,P.sanity-(difficulty==='godmode'?0:difficulty==='veryeasy'?.003:.038));}
   }
   if(P.sanity<35&&fr%60===0)sfxHeart(.06+.11*(1-P.sanity/35));
   // Safe room detection and overstay penalty
@@ -1249,6 +1252,12 @@ function updPlayer(){
   if(LEVELS[lvlN].scriptedEvents){LEVELS[lvlN].scriptedEvents.forEach((ev,i)=>{if(scriptedDone.has(i))return;if(Math.abs(pTx-ev.tx)<=1&&Math.abs(pTy-ev.ty)<=1){scriptedDone.add(i);if(ev.type==='doorSlam'){sfxSlam();shk=10;msg='A door slams somewhere deep in the building.';msgFr=fr;}else if(ev.type==='flicker'){P.flashOn=false;setTimeout(()=>{if(P.battery>0)P.flashOn=true;},800+Math.random()*600);try{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sawtooth';o.frequency.value=60;g.gain.setValueAtTime(.05,A.currentTime);g.gain.exponentialRampToValueAtTime(.0001,A.currentTime+.4);o.start();o.stop(A.currentTime+.42);}catch(e){}msg='The light flickers and dies.';msgFr=fr;}else if(ev.type==='shapeFlash'){if(!LEVELS[lvlN].useListener){ghostX=ev.tx*TILE;ghostY=ev.ty*TILE;ghostFr=3;}sfxStatic(.035,.2);msg='Something moved at the edge of the light.';msgFr=fr;}}});}
   if(keycardItem&&!keycardItem.taken&&Math.hypot(P.x-keycardItem.x,P.y-keycardItem.y)<TILE*.75){keycardItem.taken=true;keycardFound=true;try{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sine';o.frequency.value=660;g.gain.setValueAtTime(0,A.currentTime);g.gain.linearRampToValueAtTime(.07,A.currentTime+.04);g.gain.linearRampToValueAtTime(0,A.currentTime+.3);o.start();o.stop(A.currentTime+.32);}catch(e){}msg='KEYCARD FOUND  --  Use near a locked door  [SPACE]';msgFr=fr;}
   if(lockedRoomDoc&&!lockedRoomDoc.taken&&Math.hypot(P.x-lockedRoomDoc.x,P.y-lockedRoomDoc.y)<TILE*.75){lockedRoomDoc.taken=true;if(LEVELS[lvlN].useListener)noiseLevel=Math.min(100,noiseLevel+18);const lr=LEVELS[lvlN].lockedRoom;if(!collectedDocs.find(x=>x.title===lr.docTitle))collectedDocs.push({title:lr.docTitle,lines:lr.docLines,level:LEVELS[lvlN].name});evidenceActive=true;evidenceTimer=900;evidenceClues=[];evidenceMsg='['+lr.docTitle+']\n'+lr.docLines.join('\n');}
+  }
+  // Very Easy — Level 0 crybaby tips
+  if(lvlN===0&&difficulty==='veryeasy'){
+    if(!scriptedDone.has('ve0')&&fr>180){scriptedDone.add('ve0');msg='Welcome, crybaby. VERY EASY mode is on. The monster cannot reach you here.  Try not to be scared of the rain.';msgFr=fr;}
+    if(!scriptedDone.has('ve1')&&Math.hypot(P.x-3.5*TILE,P.y-5.5*TILE)<TILE*3){scriptedDone.add('ve1');msg='There\'s a key in the guardhouse. It opens the building. Normal players find this in 10 seconds. Take your time.';msgFr=fr;}
+    if(!scriptedDone.has('ve2')&&Math.hypot(P.x-13.5*TILE,P.y-13.5*TILE)<TILE*3){scriptedDone.add('ve2');msg='You are approaching the Aldric Building. Normal mode players enter here and immediately feel dread. You will be fine. Probably.';msgFr=fr;}
   }
   // Tape proximity beep
   if(!LEVELS[lvlN].prelude){
@@ -2347,6 +2356,12 @@ function drwWin(){
     '',
     '[ CASE FILE — SEALED INDEFINITELY ]',
   ].forEach((l,i)=>ctx.fillText(l,W/2,H/2-88+i*15));
+  if(difficulty==='veryeasy'){
+    ctx.fillStyle='rgba(140,180,100,0.60)';ctx.font='italic 9px monospace';
+    ctx.fillText('You completed CASE FILE 1994 on VERY EASY.',W/2,H-44);
+    ctx.fillStyle='rgba(140,180,100,0.42)';ctx.font='9px monospace';
+    ctx.fillText('That counts. Kind of. Try NORMAL next time and feel what Harris actually felt.',W/2,H-30);
+  }
   if(Math.sin(fr*.07)>0){ctx.fillStyle='rgba(188,160,70,0.6)';ctx.font='11px monospace';ctx.fillText('▶ CLICK OR SPACE TO RETURN TO TITLE ◀',W/2,H-12);}
   ctx.drawImage(scanC,0,0);
 }
