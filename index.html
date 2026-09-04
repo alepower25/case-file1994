@@ -496,6 +496,8 @@ function updListener(){
     lastNoisePos={x:P.x,y:P.y};
     LIS.state='alerted';
   }
+  // Insane: Listener senses presence within close range regardless of noise
+  if(difficulty==='insane'&&dist<TILE*3.5){lastNoisePos={x:P.x,y:P.y};LIS.state='alerted';}
   // Fade back to patrol — harder on hard mode (needs lower noise to calm down)
   const calmThresh=difficulty==='insane'?1:difficulty==='hard'?6:difficulty==='veryeasy'?40:difficulty==='easy'?22:12;
   if(noiseLevel<calmThresh&&LIS.state==='alerted'&&Math.hypot(LIS.x-lastNoisePos.x,LIS.y-lastNoisePos.y)<TILE*1.5){
@@ -858,7 +860,7 @@ function loadLevel(n){
   Object.assign(F,{x:L.fStart[0]*TILE,y:L.fStart[1]*TILE,angle:Math.PI,
     state:'lurk',lurkTimer:lurkDur(),absentTimer:0,
     opacity:0,opTarget:1,flickerFr:0,encroachCount:0,growlCd:500,
-    stareTimer:0,jitterTimer:80,infraCd:0});
+    stareTimer:0,jitterTimer:80,infraCd:0,lookDelays:0});
   tapes=[];tapesTotal=L.tapeData.length;
   (()=>{
     const valid=[];
@@ -1047,9 +1049,24 @@ function updFigure(){
           F.encroachCount++;
         }
         F.flickerFr=2;sfxTeleport();
-        F.lurkTimer=lurkDur();
+        F.lurkTimer=lurkDur();F.lookDelays=0;
       } else {
-        F.lurkTimer=100;
+        // On insane: briefly pause then force encroach after 2 consecutive look-delays
+        if(difficulty==='insane'){
+          F.lookDelays++;
+          if(F.lookDelays>=2){
+            // Force encroach — looking no longer protects
+            const minD=gL()===0?TILE*5:gL()===1?TILE*3.5:TILE*1.8;
+            const maxD=TILE*(9-Math.min(F.encroachCount,4+lvlN));
+            const pos=randFloor(P.x,P.y,minD,Math.max(minD+TILE,maxD));
+            if(pos){F.x=pos[0];F.y=pos[1];const a=Math.atan2(P.y-F.y,P.x-F.x);F.angle=Math.random()<.30?a+Math.PI:a;F.encroachCount++;}
+            F.flickerFr=2;sfxTeleport();F.lurkTimer=lurkDur();F.lookDelays=0;
+          } else {
+            F.lurkTimer=15;
+          }
+        } else {
+          F.lurkTimer=100;
+        }
       }
     }
 
@@ -1293,6 +1310,11 @@ function updPlayer(){
       else if(!scriptedDone.has('l0_c')&&Math.hypot(P.x-3.5*TILE,P.y-6*TILE)<TILE*2.5){scriptedDone.add('l0_c');msg='Guardhouse. Old security booth. The light is still on inside. Something is still running. That should not be possible.';msgFr=fr;briefingLog.push({label:'NOV 5 — GUARDHOUSE',text:msg});}
       else if(!scriptedDone.has('l0_d')&&Math.hypot(P.x-13*TILE,P.y-11*TILE)<TILE*3){scriptedDone.add('l0_d');msg='Department records: no entry logged since November 1987. Forty-seven workers. None listed as exiting. The file was sealed the same day.';msgFr=fr;briefingLog.push({label:'NOV 5 — CASE RECORDS',text:msg});}
       else if(!scriptedDone.has('l0_e')&&Math.hypot(P.x-13.5*TILE,P.y-14*TILE)<TILE*2){scriptedDone.add('l0_e');msg='The door is not locked. It should be locked. The case file said the building was sealed. Locks work from the outside. This one is open from the inside.';msgFr=fr;briefingLog.push({label:'NOV 5 — THE DOOR',text:msg});}
+      else if(difficulty==='veryeasy'){
+        if(!scriptedDone.has('ve0')&&fr>300){scriptedDone.add('ve0');msg='[VERY EASY] The monster cannot reach you out here. You are safe. Try not to be scared of the rain.';msgFr=fr;}
+        else if(!scriptedDone.has('ve1')&&scriptedDone.has('l0_c')){scriptedDone.add('ve1');msg='[VERY EASY] The key is in that guardhouse. Normal players find it in under 10 seconds. Take your time.';msgFr=fr;}
+        else if(!scriptedDone.has('ve2')&&scriptedDone.has('l0_e')){scriptedDone.add('ve2');msg='[VERY EASY] You are at the Aldric Building entrance. Real dread starts inside. Good luck. You will need it more than Normal players.';msgFr=fr;}
+      }
     }
   }
   // Tape proximity beep
