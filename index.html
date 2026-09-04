@@ -135,6 +135,7 @@ const LEVELS=[
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
   ],
   tapeData:[{clues:['B=R']},{clues:['Q=O']},{clues:['N=M']}],
+  wordPool:['ROOM','MOON','DOOR','LOOK','COOL','POOL','CELL','HALL','WALL','TOOL'],
   word:'ROOM',encodedWord:'BQQN',
   pStart:[1.5,1.5],fStart:[22.5,12.5],
   exit:{x:7.5,y:18.5},
@@ -176,6 +177,7 @@ const LEVELS=[
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
   ],
   tapeData:[{clues:['H=B'],special:true},{clues:['V=L']},{clues:['Z=O']},{clues:['F=D']}],
+  wordPool:['BLOOD','FLOOD','STEEL','STILL','ATTIC','CLIFF','SKILL','SPELL','SHELL','STOOL'],
   word:'BLOOD',encodedWord:'HVZZF',
   pStart:[1.5,12.5],fStart:[26.5,2.5],
   exit:{x:26.5,y:1.5},
@@ -218,6 +220,7 @@ const LEVELS=[
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
   ],
   tapeData:[{clues:['X=E']},{clues:['K=S']},{clues:['J=C']},{clues:['B=A']},{clues:['Y=P']}],
+  wordPool:['ESCAPE','BATTLE','BOTTLE','FALLEN','HIDDEN','ASLEEP','INSIDE','SADDEN','CREEPS','BATTLE'],
   word:'ESCAPE',encodedWord:'XKJBYX',
   pStart:[1.5,1.5],fStart:[25.5,15.5],
   exit:{x:25.5,y:18.5},
@@ -262,6 +265,7 @@ const LEVELS=[
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
   ],
   tapeData:[{clues:['K=S']},{clues:['X=I']},{clues:['O=G']},{clues:['Q=N']},{clues:['B=A']},{clues:['A=L']}],
+  wordPool:['SIGNAL','BROKEN','FROZEN','SILENT','VANISH','SHADOW','FADING','CAVITY','MORTAL','RADIOS'],
   word:'SIGNAL',encodedWord:'KXOQBA',
   pStart:[1.5,1.5],lStart:[15.5,10.5],fStart:[28.5,18.5],
   exit:{x:27.5,y:17.5},
@@ -307,6 +311,7 @@ const LEVELS=[
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
   ],
   tapeData:[{clues:['Z=S']},{clues:['P=U']},{clues:['Y=B']},{clues:['Q=J']},{clues:['R=E']},{clues:['J=C']},{clues:['W=T']}],
+  wordPool:['SUBJECT','HISTORY','PHANTOM','DISTURB','STALKER','CHAMBER','WATCHER','CAPTURE'],
   word:'SUBJECT',encodedWord:'ZPYQRJW',
   pStart:[1.5,1.5],lStart:[15.5,15.5],fStart:[28.5,18.5],
   exit:{x:27.5,y:17.5},
@@ -876,6 +881,12 @@ function loadLevel(n){
       return{x:p[0]*TILE,y:p[1]*TILE,taken:false,i,special:!!td.special,clues:td.clues||[]};
     });
   })();
+  if(L.wordPool){
+    const word=L.wordPool[Math.floor(Math.random()*L.wordPool.length)];
+    const {encodedWord,clues}=genCipher(word);
+    L.word=word;L.encodedWord=encodedWord;
+    let ci=0;L.tapeData.forEach(td=>{if(td.clues&&td.clues.length>0){td.clues=[clues[ci]||''];ci++;}});
+  }
   batteryPickups=[];
   if(n===0){if(difficulty==='veryeasy')batteryPickups.push({x:7.5*TILE,y:8.5*TILE,taken:false});briefingLog=[];notesTab='docs';}
   if(!LEVELS[n].prelude){
@@ -1158,6 +1169,14 @@ function updEnv(){
   } else visitedZones.add(zone);
 }
 
+// ── CIPHER GENERATOR ──────────────────────────────────────────────────
+function genCipher(word){
+  const unique=[...new Set(word.split(''))];
+  const avail='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').filter(l=>!word.includes(l));
+  for(let i=avail.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[avail[i],avail[j]]=[avail[j],avail[i]];}
+  const encMap={};unique.forEach((l,i)=>{encMap[l]=avail[i];});
+  return{encodedWord:word.split('').map(l=>encMap[l]).join(''),clues:unique.map(l=>`${encMap[l]}=${l}`)};
+}
 // ── EXIT CIPHER SUBMIT ────────────────────────────────────────────────
 function submitExitPuzzle(){
   if(exitPuzzleInput===LEVELS[lvlN].word){exitPuzzleResult='correct';exitPuzzleResultTimer=90;}
@@ -1274,11 +1293,6 @@ function updPlayer(){
       else if(!scriptedDone.has('l0_c')&&Math.hypot(P.x-3.5*TILE,P.y-6*TILE)<TILE*2.5){scriptedDone.add('l0_c');msg='Guardhouse. Old security booth. The light is still on inside. Something is still running. That should not be possible.';msgFr=fr;briefingLog.push({label:'NOV 5 — GUARDHOUSE',text:msg});}
       else if(!scriptedDone.has('l0_d')&&Math.hypot(P.x-13*TILE,P.y-11*TILE)<TILE*3){scriptedDone.add('l0_d');msg='Department records: no entry logged since November 1987. Forty-seven workers. None listed as exiting. The file was sealed the same day.';msgFr=fr;briefingLog.push({label:'NOV 5 — CASE RECORDS',text:msg});}
       else if(!scriptedDone.has('l0_e')&&Math.hypot(P.x-13.5*TILE,P.y-14*TILE)<TILE*2){scriptedDone.add('l0_e');msg='The door is not locked. It should be locked. The case file said the building was sealed. Locks work from the outside. This one is open from the inside.';msgFr=fr;briefingLog.push({label:'NOV 5 — THE DOOR',text:msg});}
-      else if(difficulty==='veryeasy'){
-        if(!scriptedDone.has('ve0')&&fr>300){scriptedDone.add('ve0');msg='[VERY EASY] The monster cannot reach you out here. You are safe. Try not to be scared of the rain.';msgFr=fr;}
-        else if(!scriptedDone.has('ve1')&&scriptedDone.has('l0_c')){scriptedDone.add('ve1');msg='[VERY EASY] The key is in that guardhouse. Normal players find it in under 10 seconds. Take your time.';msgFr=fr;}
-        else if(!scriptedDone.has('ve2')&&scriptedDone.has('l0_e')){scriptedDone.add('ve2');msg='[VERY EASY] You are at the Aldric Building entrance. Real dread starts inside. Good luck. You will need it more than Normal players.';msgFr=fr;}
-      }
     }
   }
   // Tape proximity beep
@@ -1789,11 +1803,6 @@ function drwHUD(){
   }else{
     ctx.fillStyle=P.tapes>=tapesTotal?'rgba(68,188,88,.76)':'rgba(188,150,50,.76)';ctx.font='bold 11px monospace';ctx.textAlign='center';ctx.fillText(`EVIDENCE TAPES  ${P.tapes}/${tapesTotal}`,W/2,difficulty==='godmode'?28:24);
     if(LEVELS[lvlN].lockedRoom){ctx.font='7px monospace';ctx.fillStyle=lockedRoomOpen?'rgba(0,200,160,0.72)':keycardFound?'rgba(0,200,220,0.72)':'rgba(130,100,40,0.55)';ctx.fillText(lockedRoomOpen?'▣ RESTRICTED ROOM: OPEN':keycardFound?'▣ KEYCARD HELD — [SPACE] NEAR DOOR':'▣ KEYCARD NOT FOUND',W/2,difficulty==='godmode'?38:34);}
-  }
-  if(collectedClues.length>0){
-    const sp=collectedClues.length<=4?72:58;const cpw=(collectedClues.length-1)*sp+48;
-    ctx.fillStyle='rgba(0,0,0,0.50)';ctx.fillRect(W/2-cpw/2-4,28,cpw+8,13);
-    collectedClues.forEach((cl,i)=>{ctx.fillStyle='rgba(118,188,118,0.68)';ctx.font='7px monospace';ctx.textAlign='center';ctx.fillText(cl,W/2+(i-(collectedClues.length-1)/2)*sp,38);});
   }
   if(msg&&fr-msgFr<500){
     const a=Math.min(1,(fr-msgFr)/20)*Math.min(1,(500-(fr-msgFr))/30);
@@ -2515,28 +2524,31 @@ function drwEvidence(){
   ctx.fillStyle='rgba(8,6,3,0.97)';ctx.fillRect(bx,by,bw,bh);
   ctx.strokeStyle='rgba(182,148,50,0.70)';ctx.lineWidth=1.5;ctx.strokeRect(bx,by,bw,bh);
   ctx.textAlign='center';
+  const isTape=evidenceClues.length>0;
   ctx.fillStyle='rgba(188,150,50,0.90)';ctx.font='bold 11px monospace';
-  ctx.fillText('▶ EVIDENCE RECOVERED — CIPHER CLUES FOUND',W/2,by+22);
+  ctx.fillText(isTape?'▶ EVIDENCE RECOVERED — CIPHER CLUES FOUND':'▶ DOCUMENT RECOVERED',W/2,by+22);
   ctx.strokeStyle='rgba(182,148,50,0.22)';ctx.lineWidth=1;
   ctx.beginPath();ctx.moveTo(bx+14,by+32);ctx.lineTo(bx+bw-14,by+32);ctx.stroke();
-  const rawMsg=evidenceMsg.replace(/^▶ TAPE \d+.*? — /,'');
+  const rawMsg=evidenceMsg.replace(/^▶ TAPE \d+.*? — /,'').replace(/^\[.*?\]\n/,'');
   ctx.fillStyle='rgba(178,148,90,0.70)';ctx.font='9px monospace';ctx.fillText('FIELD RECORDING:',W/2,by+48);
   ctx.fillStyle='rgba(200,180,140,0.78)';ctx.font='italic 10px monospace';
   const wds=rawMsg.split(' ');let ln='',lns=[];
   for(const w of wds){if((ln+w).length>60){lns.push(ln.trim());ln='';}ln+=w+' ';}if(ln.trim())lns.push(ln.trim());
-  lns.slice(0,2).forEach((l,i)=>ctx.fillText(l,W/2,by+62+i*13));
-  ctx.strokeStyle='rgba(182,148,50,0.22)';ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(bx+14,by+94);ctx.lineTo(bx+bw-14,by+94);ctx.stroke();
-  ctx.fillStyle='rgba(138,208,138,0.90)';ctx.font='bold 11px monospace';
-  ctx.fillText('NEW CIPHER CLUES:',W/2,by+112);
-  const perRow=3;const evRows=[];
-  for(let i=0;i<evidenceClues.length;i+=perRow)evRows.push(evidenceClues.slice(i,i+perRow));
-  evRows.forEach((row,ri)=>{row.forEach((cl,ci)=>{
-    const cx2=W/2+(ci-(row.length-1)/2)*100,cy2=by+122+ri*52;
-    ctx.fillStyle='rgba(18,28,18,0.90)';ctx.fillRect(cx2-38,cy2,76,36);
-    ctx.strokeStyle='rgba(88,188,88,0.55)';ctx.lineWidth=1;ctx.strokeRect(cx2-38,cy2,76,36);
-    ctx.fillStyle='rgba(138,218,138,0.95)';ctx.font='bold 20px monospace';ctx.fillText(cl,cx2,cy2+24);
-  });});
+  lns.slice(0,isTape?2:5).forEach((l,i)=>ctx.fillText(l,W/2,by+62+i*13));
+  if(isTape){
+    ctx.strokeStyle='rgba(182,148,50,0.22)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(bx+14,by+94);ctx.lineTo(bx+bw-14,by+94);ctx.stroke();
+    ctx.fillStyle='rgba(138,208,138,0.90)';ctx.font='bold 11px monospace';
+    ctx.fillText('NEW CIPHER CLUES:',W/2,by+112);
+    const perRow=3;const evRows=[];
+    for(let i=0;i<evidenceClues.length;i+=perRow)evRows.push(evidenceClues.slice(i,i+perRow));
+    evRows.forEach((row,ri)=>{row.forEach((cl,ci)=>{
+      const cx2=W/2+(ci-(row.length-1)/2)*100,cy2=by+122+ri*52;
+      ctx.fillStyle='rgba(18,28,18,0.90)';ctx.fillRect(cx2-38,cy2,76,36);
+      ctx.strokeStyle='rgba(88,188,88,0.55)';ctx.lineWidth=1;ctx.strokeRect(cx2-38,cy2,76,36);
+      ctx.fillStyle='rgba(138,218,138,0.95)';ctx.font='bold 20px monospace';ctx.fillText(cl,cx2,cy2+24);
+    });});
+  }
   const tp=evidenceTimer/900;
   ctx.fillStyle='rgba(0,0,0,0.55)';ctx.fillRect(bx+20,by+bh-40,bw-40,10);
   ctx.fillStyle=tp>.5?'rgba(60,148,60,0.82)':tp>.25?'rgba(188,148,30,0.82)':'rgba(188,40,40,0.82)';
@@ -2544,8 +2556,7 @@ function drwEvidence(){
   ctx.strokeStyle='rgba(182,148,50,0.28)';ctx.strokeRect(bx+20,by+bh-40,bw-40,10);
   ctx.fillStyle='rgba(188,160,70,0.65)';ctx.font='9px monospace';
   ctx.fillText('[ ENTER ] TO RESUME  —  AUTO IN '+Math.ceil(evidenceTimer/60)+'s',W/2,by+bh-22);
-  ctx.fillStyle='rgba(148,128,80,0.55)';ctx.font='7px monospace';
-  ctx.fillText('MEMORIZE THESE CLUES — YOU WILL NEED THEM AT THE EXIT',W/2,by+bh-8);
+  if(isTape){ctx.fillStyle='rgba(148,128,80,0.55)';ctx.font='7px monospace';ctx.fillText('MEMORIZE THESE CLUES — YOU WILL NEED THEM AT THE EXIT',W/2,by+bh-8);}
   ctx.drawImage(scanC,0,0);
 }
 
