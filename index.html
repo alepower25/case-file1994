@@ -630,8 +630,10 @@ document.addEventListener('keydown',e=>{
   if(e.key.toLowerCase()==='f')toggleFlash();
   if(e.key.toLowerCase()==='r'&&gs==='playing'&&!paused){rechargeFlash();return;}
   if(e.key==='s'||e.key==='S'){if(gs==='title'){gs='settings';settingsInsultShown=false;}return;}
-  if(e.key==='n'||e.key==='N'){if(!notesOpen)notesSelIdx=0;notesOpen=!notesOpen;return;}
-  if(notesOpen&&(e.key==='ArrowDown'||e.key==='ArrowUp')){notesSelIdx=(notesSelIdx+(e.key==='ArrowDown'?1:-1)+collectedDocs.length)%collectedDocs.length;e.preventDefault?.();return;}
+  if(e.key==='h'||e.key==='H'){if(gs==='title'){gs='help';}return;}
+  if(e.key==='n'||e.key==='N'){if(!notesOpen){notesSelIdx=0;notesTab='docs';}notesOpen=!notesOpen;return;}
+  if(notesOpen&&e.key==='Tab'){notesTab=notesTab==='docs'?'briefing':'docs';e.preventDefault?.();return;}
+  if(notesOpen&&notesTab==='docs'&&(e.key==='ArrowDown'||e.key==='ArrowUp')){notesSelIdx=(notesSelIdx+(e.key==='ArrowDown'?1:-1)+Math.max(1,collectedDocs.length))%Math.max(1,collectedDocs.length);e.preventDefault?.();return;}
   if(gs==='settings'){
     if(e.key==='Escape'){gs='title';return;}
     if(e.key==='1'){difficulty='veryeasy';settingsInsultShown=true;return;}
@@ -642,7 +644,7 @@ document.addEventListener('keydown',e=>{
     if(e.key==='6'&&godModeUnlocked){difficulty='godmode';settingsInsultShown=false;return;}
   }
   if(e.key==='Escape'&&notesOpen){notesOpen=false;return;}
-  if(e.key==='Escape'&&gs==='help'){onAct();return;}
+  if(e.key==='Escape'&&gs==='help'){gs='title';startTitleMusic();return;}
   if((e.key==='p'||e.key==='P'||e.key==='Escape')&&(gs==='playing'||paused)){paused=!paused;}
   e.preventDefault?.();
 },{passive:false});
@@ -651,8 +653,15 @@ c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();const s=r.w
 c.addEventListener('click',()=>{
   A.resume();
   if(notesOpen){
-    const sbW=205,rowH=44,listTop=58;
-    if(mX>=10&&mX<=sbW){
+    const hdrH=36,tabH=22,contentY=hdrH+tabH;
+    // Tab strip click
+    if(mY>=hdrH&&mY<contentY){
+      const tabDefs=[['docs',W/2-80],['briefing',W/2+90]];
+      tabDefs.forEach(([id,tx])=>{if(mX>=tx-80&&mX<tx+80)notesTab=id;});
+      return;
+    }
+    const sbW=205,rowH=44,listTop=contentY+22;
+    if(notesTab==='docs'&&mX>=10&&mX<=sbW){
       const clickedRow=Math.floor((mY-listTop)/rowH);
       if(clickedRow>=0&&clickedRow<collectedDocs.length)notesSelIdx=clickedRow;
     }
@@ -695,6 +704,7 @@ let noirMusicStarted=false;let titleMusicStarted=false;
 let evidenceActive=false,evidenceTimer=0,evidenceClues=[],evidenceMsg='';
 let exitPuzzleActive=false,exitPuzzleInput='',exitPuzzleTimer=0,exitPuzzleResult=null,exitPuzzleResultTimer=0,exitWrongFlash=0,exitLocked=false;
 let batteryPickups=[];let battWarnFlash=0;
+let briefingLog=[];let notesTab='docs';
 let sneakBreathTimer=0;let keycardFound=false;let lockedRoomOpen=false;let lockedRoomDoc=null;let keycardItem=null;let scriptedDone=new Set();let creakCooldown=0;let visitedTileMap=new Map();let figLearnTarget=null;let figLearnCd=0;
 let godModeUnlocked=localStorage.getItem('godModeUnlocked')==='1';let checkpoint=null;let checkpointUsesLeft=0;let checkpointFlash=0;
 let safeRoomPenalty=1.0;let safeRoomTimer=0;let inSafeRoom=false;let safeRoomNotified=false;
@@ -866,7 +876,7 @@ function loadLevel(n){
     });
   })();
   batteryPickups=[];
-  if(n===0){batteryPickups.push({x:7.5*TILE,y:8.5*TILE,taken:false});}
+  if(n===0){batteryPickups.push({x:7.5*TILE,y:8.5*TILE,taken:false});briefingLog=[];notesTab='docs';}
   if(!LEVELS[n].prelude){
     const battCount=difficulty==='insane'?1:difficulty==='hard'?1:difficulty==='veryeasy'?4:2;
     const usedPos=tapes.map(t=>[t.x/TILE,t.y/TILE]);
@@ -1258,11 +1268,11 @@ function updPlayer(){
   if(lvlN===0){
     const _msgFree=!msg||fr-msgFr>460;
     if(_msgFree){
-      if(!scriptedDone.has('l0_a')&&fr>120){scriptedDone.add('l0_a');msg='Nov 5, 1994. 3:08 AM. I parked two blocks out. The building has been sealed for seven years. The tip said the frequency was still active.';msgFr=fr;}
-      else if(!scriptedDone.has('l0_b')&&Math.hypot(P.x-8*TILE,P.y-9*TILE)<TILE*3.5){scriptedDone.add('l0_b');msg='The rain started before I arrived. It has not let up. There is something wrong with the air here. Like pressure before a storm that already happened.';msgFr=fr;}
-      else if(!scriptedDone.has('l0_c')&&Math.hypot(P.x-3.5*TILE,P.y-6*TILE)<TILE*2.5){scriptedDone.add('l0_c');msg='Guardhouse. Old security booth. The light is still on inside. Something is still running. That should not be possible.';msgFr=fr;}
-      else if(!scriptedDone.has('l0_d')&&Math.hypot(P.x-13*TILE,P.y-11*TILE)<TILE*3){scriptedDone.add('l0_d');msg='Department records: no entry logged since November 1987. Forty-seven workers. None listed as exiting. The file was sealed the same day.';msgFr=fr;}
-      else if(!scriptedDone.has('l0_e')&&Math.hypot(P.x-13.5*TILE,P.y-14*TILE)<TILE*2){scriptedDone.add('l0_e');msg='The door is not locked. It should be locked. The case file said the building was sealed. Locks work from the outside. This one is open from the inside.';msgFr=fr;}
+      if(!scriptedDone.has('l0_a')&&fr>120){scriptedDone.add('l0_a');msg='Nov 5, 1994. 3:08 AM. I parked two blocks out. The building has been sealed for seven years. The tip said the frequency was still active.';msgFr=fr;briefingLog.push({label:'NOV 5 — EXTERIOR',text:msg});}
+      else if(!scriptedDone.has('l0_b')&&Math.hypot(P.x-8*TILE,P.y-9*TILE)<TILE*3.5){scriptedDone.add('l0_b');msg='The rain started before I arrived. It has not let up. There is something wrong with the air here. Like pressure before a storm that already happened.';msgFr=fr;briefingLog.push({label:'NOV 5 — APPROACH',text:msg});}
+      else if(!scriptedDone.has('l0_c')&&Math.hypot(P.x-3.5*TILE,P.y-6*TILE)<TILE*2.5){scriptedDone.add('l0_c');msg='Guardhouse. Old security booth. The light is still on inside. Something is still running. That should not be possible.';msgFr=fr;briefingLog.push({label:'NOV 5 — GUARDHOUSE',text:msg});}
+      else if(!scriptedDone.has('l0_d')&&Math.hypot(P.x-13*TILE,P.y-11*TILE)<TILE*3){scriptedDone.add('l0_d');msg='Department records: no entry logged since November 1987. Forty-seven workers. None listed as exiting. The file was sealed the same day.';msgFr=fr;briefingLog.push({label:'NOV 5 — CASE RECORDS',text:msg});}
+      else if(!scriptedDone.has('l0_e')&&Math.hypot(P.x-13.5*TILE,P.y-14*TILE)<TILE*2){scriptedDone.add('l0_e');msg='The door is not locked. It should be locked. The case file said the building was sealed. Locks work from the outside. This one is open from the inside.';msgFr=fr;briefingLog.push({label:'NOV 5 — THE DOOR',text:msg});}
       else if(difficulty==='veryeasy'){
         if(!scriptedDone.has('ve0')&&fr>300){scriptedDone.add('ve0');msg='[VERY EASY] The monster cannot reach you out here. You are safe. Try not to be scared of the rain.';msgFr=fr;}
         else if(!scriptedDone.has('ve1')&&scriptedDone.has('l0_c')){scriptedDone.add('ve1');msg='[VERY EASY] The key is in that guardhouse. Normal players find it in under 10 seconds. Take your time.';msgFr=fr;}
@@ -1366,8 +1376,8 @@ function onAct(){
     }
   }
   if(evidenceActive){evidenceActive=false;evidenceTimer=0;return;}
-  if(gs==='title'){titleMusicStarted=false;if(!helpShown){gs='help';}else{startBGMusic();gs='playing';lvlN=0;loadLevel(0);}return;}
-  if(gs==='help'){helpShown=true;localStorage.setItem('helpShown','1');startBGMusic();gs='playing';lvlN=0;loadLevel(0);return;}
+  if(gs==='title'){titleMusicStarted=false;startBGMusic();gs='playing';lvlN=0;loadLevel(0);return;}
+  if(gs==='help'){gs='title';startTitleMusic();return;}
   if(gs==='dead'){paused=false;gs='playing';lvlN=0;loadLevel(0);return;}
   if(gs==='win'){if(!creditsActive){creditsActive=true;return;}paused=false;creditsActive=false;gs='title';startTitleMusic();return;}
   if(gs==='transition'&&fr-transFr>90){paused=false;lvlN++;loadLevel(lvlN);gs='playing';return;}
@@ -1993,7 +2003,7 @@ function drwTitle(){
   // Bottom bar hints
   ctx.textAlign='center';
   ctx.fillStyle='rgba(155,128,50,0.72)';ctx.font='bold 11px monospace';
-  ctx.fillText('[ S ]  SETTINGS          [ N ]  FIELD NOTES',W/2,H-8);
+  ctx.fillText('[ S ]  SETTINGS    [ H ]  INSTRUCTIONS    [ N ]  FIELD NOTES',W/2,H-8);
   drwVHSHorror();
 }
 function drwHelp(){
@@ -2023,7 +2033,7 @@ function drwHelp(){
   ctx.fillStyle='rgba(200,180,130,0.82)';ctx.font='10px monospace';
   const mov=['W / A / S / D','ARROW KEYS','─────────────','SHIFT  ─  SPRINT','C  ─  SNEAK (L4-5)'];
   mov.forEach((l,i)=>ctx.fillText(l,col1x,coly+18+i*lineH));
-  const act=['F  ─  FLASHLIGHT ON/OFF','R  ─  RECHARGE BATTERY','─────────────────────','SPACE / CLICK  ─  INTERACT','N  ─  FIELD NOTES','P / ESC  ─  PAUSE'];
+  const act=['F  ─  FLASHLIGHT ON/OFF','R  ─  RECHARGE BATTERY','─────────────────────','SPACE / CLICK  ─  INTERACT','N  ─  FIELD NOTES (TAB=BRIEFING)','P / ESC  ─  PAUSE'];
   act.forEach((l,i)=>ctx.fillText(l,col2x,coly+18+i*lineH));
   // Divider
   const divY=coly+105;
@@ -2048,7 +2058,7 @@ function drwHelp(){
   ctx.fillStyle='rgba(215,80,60,0.88)';ctx.font='bold 10px monospace';
   ctx.fillText('THE BUILDING IS NOT SAFE.  TRUST NOTHING YOU SEE.',W/2,warnY+2);
   // Start prompt
-  if(Math.sin(fr*.075)>0){ctx.fillStyle='rgba(195,165,72,0.88)';ctx.font='bold 12px monospace';ctx.fillText('▶  CLICK OR SPACE TO BEGIN  ◀',W/2,by+bh-16);}
+  if(Math.sin(fr*.075)>0){ctx.fillStyle='rgba(195,165,72,0.88)';ctx.font='bold 12px monospace';ctx.fillText('▶  SPACE / CLICK / ESC  TO CLOSE  ◀',W/2,by+bh-16);}
   // REC indicator
   if(fr%60<42){ctx.fillStyle='rgba(215,44,44,0.75)';ctx.beginPath();ctx.arc(bx+10,by+bh-14,3.5,0,Math.PI*2);ctx.fill();}
   ctx.textAlign='left';ctx.fillStyle='rgba(188,160,76,0.40)';ctx.font='9px monospace';
@@ -2065,71 +2075,108 @@ function drwNotes(){
   ctx.strokeStyle='rgba(120,140,195,0.28)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,hdrH);ctx.lineTo(W,hdrH);ctx.stroke();
   ctx.textAlign='center';
   ctx.fillStyle='rgba(162,178,230,0.92)';ctx.font='bold 14px monospace';ctx.fillText('FIELD NOTES',W/2,23);
-  ctx.textAlign='right';ctx.fillStyle='rgba(100,118,170,0.55)';ctx.font='9px monospace';ctx.fillText('[ ↑ ↓ ]  navigate    [ N / ESC ]  close',W-12,23);
+  ctx.textAlign='right';ctx.fillStyle='rgba(100,118,170,0.55)';ctx.font='9px monospace';
+  ctx.fillText('[ TAB ]  switch tab    [ ↑ ↓ ]  navigate    [ N / ESC ]  close',W-12,23);
+  // Tab strip
+  const tabH=22,tabY=hdrH;
+  const tabDefs=[['DOCUMENTS',collectedDocs.length,'docs'],['BRIEFING',briefingLog.length,'briefing']];
+  tabDefs.forEach(([label,count,id],ti)=>{
+    const tw=160,tx=W/2-80+ti*170;
+    const sel=notesTab===id;
+    ctx.fillStyle=sel?'rgba(20,24,50,1)':'rgba(8,10,20,0.7)';
+    ctx.fillRect(tx-tw/2,tabY,tw,tabH);
+    ctx.strokeStyle=sel?'rgba(160,140,62,0.50)':'rgba(60,70,120,0.22)';ctx.lineWidth=sel?1:.5;
+    ctx.strokeRect(tx-tw/2,tabY,tw,tabH);
+    ctx.textAlign='center';
+    ctx.fillStyle=sel?'rgba(210,185,108,0.95)':'rgba(90,108,168,0.50)';
+    ctx.font=(sel?'bold ':'')+`9px monospace`;
+    ctx.fillText(`${label}  (${count})`,tx,tabY+14);
+    if(sel){ctx.fillStyle='rgba(160,140,62,0.65)';ctx.fillRect(tx-tw/2,tabY+tabH-2,tw,2);}
+  });
+  const contentY=hdrH+tabH;
+  if(notesTab==='briefing'){
+    // Briefing tab: show Harris observation log
+    if(briefingLog.length===0){
+      ctx.textAlign='center';
+      ctx.fillStyle='rgba(100,120,170,0.45)';ctx.font='11px monospace';ctx.fillText('No briefing entries recorded yet.',W/2,H/2-10);
+      ctx.fillStyle='rgba(70,90,135,0.35)';ctx.font='9px monospace';ctx.fillText('Harris\'s field observations are logged as you explore the exterior.',W/2,H/2+10);
+      return;
+    }
+    ctx.fillStyle='rgba(8,10,20,0.94)';ctx.fillRect(0,contentY,W,H-contentY);
+    for(let y=contentY+14;y<H;y+=16){ctx.fillStyle='rgba(75,95,155,0.045)';ctx.fillRect(12,y,W-24,1);}
+    let by2=contentY+18;
+    briefingLog.forEach(({label,text})=>{
+      ctx.textAlign='left';
+      ctx.fillStyle='rgba(188,150,50,0.82)';ctx.font='bold 9px monospace';
+      ctx.fillText('▶  '+label,22,by2);by2+=15;
+      const words=text.split(' ');let ln='',lns=[];
+      const maxW=Math.floor((W-54)/6);
+      for(const w of words){if((ln+w).length>maxW){lns.push(ln.trimEnd());ln='';}ln+=w+' ';}
+      if(ln.trim())lns.push(ln.trimEnd());
+      ctx.fillStyle='rgba(198,184,152,0.82)';ctx.font='10px monospace';
+      lns.forEach(l=>{if(by2<H-14){ctx.fillText(l,22,by2);by2+=14;}});
+      by2+=6;
+      ctx.strokeStyle='rgba(80,98,152,0.16)';ctx.lineWidth=.5;
+      ctx.beginPath();ctx.moveTo(14,by2-2);ctx.lineTo(W-14,by2-2);ctx.stroke();
+      by2+=10;
+    });
+    ctx.textAlign='right';ctx.fillStyle='rgba(82,98,152,0.38)';ctx.font='8px monospace';
+    ctx.fillText(`${briefingLog.length} entr${briefingLog.length===1?'y':'ies'} logged`,W-12,H-8);
+    return;
+  }
+  // Documents tab
   if(collectedDocs.length===0){
     ctx.textAlign='center';
-    ctx.fillStyle='rgba(100,120,170,0.45)';ctx.font='11px monospace';ctx.fillText('No field notes collected yet.',W/2,H/2-10);
-    ctx.fillStyle='rgba(70,90,135,0.35)';ctx.font='9px monospace';ctx.fillText('Find glowing documents inside the building.',W/2,H/2+10);
+    ctx.fillStyle='rgba(100,120,170,0.45)';ctx.font='11px monospace';ctx.fillText('No field notes collected yet.',W/2,(H+contentY)/2-10);
+    ctx.fillStyle='rgba(70,90,135,0.35)';ctx.font='9px monospace';ctx.fillText('Find glowing documents inside the building.',W/2,(H+contentY)/2+10);
     return;
   }
   if(notesSelIdx>=collectedDocs.length)notesSelIdx=0;
   const sbW=205;
   // Notebook binding strip (left edge)
-  ctx.fillStyle='rgba(16,20,38,1)';ctx.fillRect(0,hdrH,10,H-hdrH);
-  for(let y=hdrH+14;y<H-10;y+=20){ctx.fillStyle='rgba(50,62,105,0.65)';ctx.fillRect(3,y,5,12);ctx.strokeStyle='rgba(70,88,138,0.35)';ctx.lineWidth=.5;ctx.strokeRect(3,y,5,12);}
+  ctx.fillStyle='rgba(16,20,38,1)';ctx.fillRect(0,contentY,10,H-contentY);
+  for(let y=contentY+14;y<H-10;y+=20){ctx.fillStyle='rgba(50,62,105,0.65)';ctx.fillRect(3,y,5,12);ctx.strokeStyle='rgba(70,88,138,0.35)';ctx.lineWidth=.5;ctx.strokeRect(3,y,5,12);}
   // Sidebar background
-  ctx.fillStyle='rgba(8,10,22,0.96)';ctx.fillRect(10,hdrH,sbW-10,H-hdrH);
-  ctx.strokeStyle='rgba(100,118,182,0.20)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(sbW,hdrH);ctx.lineTo(sbW,H);ctx.stroke();
+  ctx.fillStyle='rgba(8,10,22,0.96)';ctx.fillRect(10,contentY,sbW-10,H-contentY);
+  ctx.strokeStyle='rgba(100,118,182,0.20)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(sbW,contentY);ctx.lineTo(sbW,H);ctx.stroke();
   // Sidebar header label
   ctx.textAlign='left';ctx.fillStyle='rgba(88,104,162,0.60)';ctx.font='8px monospace';
-  ctx.fillText(`DOCUMENTS  (${collectedDocs.length})`,16,hdrH+14);
-  ctx.strokeStyle='rgba(80,98,152,0.18)';ctx.beginPath();ctx.moveTo(12,hdrH+18);ctx.lineTo(sbW-8,hdrH+18);ctx.stroke();
-  const rowH=44, listTop=hdrH+22;
+  ctx.fillText(`DOCUMENTS  (${collectedDocs.length})`,16,contentY+14);
+  ctx.strokeStyle='rgba(80,98,152,0.18)';ctx.beginPath();ctx.moveTo(12,contentY+18);ctx.lineTo(sbW-8,contentY+18);ctx.stroke();
+  const rowH=44, listTop=contentY+22;
   collectedDocs.forEach((doc,i)=>{
     const ry=listTop+i*rowH;
     if(ry+rowH>H-10)return;
     const sel=i===notesSelIdx;
     ctx.fillStyle=sel?'rgba(22,26,50,0.95)':'rgba(10,13,26,0.80)';
     ctx.fillRect(10,ry,sbW-10,rowH-2);
-    // Left accent bar
     ctx.fillStyle=sel?'rgba(172,146,62,0.92)':'rgba(60,74,120,0.42)';ctx.fillRect(10,ry,3,rowH-2);
     if(sel){ctx.strokeStyle='rgba(148,124,50,0.30)';ctx.lineWidth=.8;ctx.strokeRect(10,ry,sbW-10,rowH-2);}
-    // Tab number chip
     ctx.fillStyle=sel?'rgba(172,146,62,0.30)':'rgba(40,50,88,0.40)';ctx.fillRect(16,ry+6,18,14);
     ctx.textAlign='center';ctx.fillStyle=sel?'rgba(210,185,108,0.92)':'rgba(90,108,168,0.65)';ctx.font='8px monospace';ctx.fillText(`#${i+1}`,25,ry+16);
-    // Title
     ctx.textAlign='left';ctx.fillStyle=sel?'rgba(215,192,118,0.96)':'rgba(128,148,200,0.72)';ctx.font=`${sel?'bold ':' '}9px monospace`;
     const maxChars=20;const ts=doc.title.length>maxChars?doc.title.slice(0,maxChars-1)+'…':doc.title;ctx.fillText(ts,38,ry+16);
-    // Level label
     ctx.fillStyle=sel?'rgba(148,126,52,0.68)':'rgba(72,88,140,0.50)';ctx.font='8px monospace';
     ctx.fillText(doc.level||'',38,ry+29);
-    // Arrow indicator
     if(sel){ctx.fillStyle='rgba(188,162,72,0.80)';ctx.font='10px monospace';ctx.textAlign='right';ctx.fillText('▶',sbW-8,ry+rowH/2+4);}
   });
   // Right content panel
   const cntX=sbW+2, cntW=W-cntX;
-  ctx.fillStyle='rgba(8,10,20,0.92)';ctx.fillRect(cntX,hdrH,cntW,H-hdrH);
-  // Ruled lines
-  for(let y=hdrH+18;y<H;y+=16){ctx.fillStyle='rgba(75,95,155,0.055)';ctx.fillRect(cntX+4,y,cntW-8,1);}
+  ctx.fillStyle='rgba(8,10,20,0.92)';ctx.fillRect(cntX,contentY,cntW,H-contentY);
+  for(let y=contentY+18;y<H;y+=16){ctx.fillStyle='rgba(75,95,155,0.055)';ctx.fillRect(cntX+4,y,cntW-8,1);}
   const doc=collectedDocs[notesSelIdx];
   if(!doc)return;
   const cx2=cntX+22;
   ctx.textAlign='left';
-  // Stamp header
-  ctx.fillStyle='rgba(172,0,0,0.12)';ctx.fillRect(cntX+cntW-100,hdrH+4,90,18);
-  ctx.strokeStyle='rgba(172,0,0,0.28)';ctx.lineWidth=.8;ctx.strokeRect(cntX+cntW-100,hdrH+4,90,18);
-  ctx.textAlign='right';ctx.fillStyle='rgba(185,40,40,0.70)';ctx.font='bold 9px monospace';ctx.fillText('CLASSIFIED',cntX+cntW-14,hdrH+15);
+  ctx.fillStyle='rgba(172,0,0,0.12)';ctx.fillRect(cntX+cntW-100,contentY+4,90,18);
+  ctx.strokeStyle='rgba(172,0,0,0.28)';ctx.lineWidth=.8;ctx.strokeRect(cntX+cntW-100,contentY+4,90,18);
+  ctx.textAlign='right';ctx.fillStyle='rgba(185,40,40,0.70)';ctx.font='bold 9px monospace';ctx.fillText('CLASSIFIED',cntX+cntW-14,contentY+15);
   ctx.textAlign='left';
-  // Title
-  ctx.fillStyle='rgba(212,190,116,0.95)';ctx.font='bold 14px monospace';ctx.fillText(doc.title,cx2,hdrH+24);
-  // Level
-  ctx.fillStyle='rgba(148,134,78,0.62)';ctx.font='9px monospace';ctx.fillText(doc.level||'',cx2,hdrH+38);
-  // Divider
-  ctx.strokeStyle='rgba(148,128,52,0.24)';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(cntX+12,hdrH+44);ctx.lineTo(W-12,hdrH+44);ctx.stroke();
-  // Body text
+  ctx.fillStyle='rgba(212,190,116,0.95)';ctx.font='bold 14px monospace';ctx.fillText(doc.title,cx2,contentY+24);
+  ctx.fillStyle='rgba(148,134,78,0.62)';ctx.font='9px monospace';ctx.fillText(doc.level||'',cx2,contentY+38);
+  ctx.strokeStyle='rgba(148,128,52,0.24)';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(cntX+12,contentY+44);ctx.lineTo(W-12,contentY+44);ctx.stroke();
   ctx.fillStyle='rgba(198,184,152,0.88)';ctx.font='10px monospace';
-  doc.lines.forEach((l,li)=>ctx.fillText(l,cx2,hdrH+60+li*16));
-  // Doc counter
+  doc.lines.forEach((l,li)=>ctx.fillText(l,cx2,contentY+60+li*16));
   ctx.textAlign='right';ctx.fillStyle='rgba(82,98,152,0.38)';ctx.font='8px monospace';
   ctx.fillText(`${notesSelIdx+1} / ${collectedDocs.length}`,sbW-10,H-8);
 }
