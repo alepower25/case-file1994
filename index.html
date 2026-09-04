@@ -331,6 +331,50 @@ const LEVELS=[
   scriptedEvents:[{tx:9,ty:9,type:'shapeFlash'},{tx:17,ty:13,type:'doorSlam'},{tx:5,ty:5,type:'flicker'}],
   lockedRoom:{keyX:3,keyY:2,doorX:3,doorY:4,roomTiles:[{x:4,y:4},{x:5,y:4}],docTitle:'CORE LOG — FINAL ENTRY',docLines:['Subject 47. Experiment 7. Day unknown.','The signal is no longer external.','We confirmed it yesterday. It is inside the subjects.','They are broadcasting it.','There is no transmitter. There never was.','The building did not contain the signal. The signal contained the building.']},
 },
+{
+  name:'NO MERCY — ALDRIC CONTAINMENT BLOCK',
+  noMercy:true,
+  prelude:false,
+  useListener:false,
+  map:[
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1],
+    [1,0,1,1,0,1,0,1,0,0,1,1,0,1,0,0,1,0,1,0,1,0,0,1,0,1,1,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,0,1,0,1,0,0,1,1,0,1,0,0,1,0,1,0,1,0,0,1,0,1,1,0,0,1],
+    [1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1],
+    [1,1,0,1,1,1,1,0,1,1,1,1,0,0,0,0,0,0,1,1,0,1,1,1,1,0,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,0,0,1,1,0,0,0,0,1,0,0,1,0,0,1,0,0,0,1,1,0,0,1,1,0,1],
+    [1,0,1,0,0,0,1,0,0,0,0,0,1,0,0,1,0,0,1,0,0,0,1,0,0,0,1,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,0,0,0,1,0,0,0,0,0,1,0,0,1,0,0,1,0,0,0,1,0,0,0,1,0,0,1],
+    [1,0,1,1,0,0,1,1,0,0,0,0,1,0,0,1,0,0,1,0,0,0,1,1,0,0,1,1,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,0,1,1,1,1,0,1,1,1,1,0,0,0,0,0,0,1,1,0,1,1,1,1,0,1,1,1,1],
+    [1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1],
+    [1,0,1,1,0,1,0,1,0,0,1,1,0,1,0,0,1,0,1,0,1,0,0,1,0,1,1,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,0,1,0,1,0,0,1,1,0,1,0,0,1,0,1,0,1,0,0,1,0,1,1,0,0,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  ],
+  tapeData:[
+    {clues:[],isBodyPart:true},{clues:[],isBodyPart:true},{clues:[],isBodyPart:true},
+    {clues:[],isBodyPart:true},{clues:[],isBodyPart:true},{clues:[],isBodyPart:true},
+    {clues:[],isBodyPart:true},{clues:[],isBodyPart:true},{clues:[],isBodyPart:true},
+    {clues:[],isBodyPart:true},
+  ],
+  bodyPartTiles:[[2.5,1.5],[8.5,1.5],[14.5,1.5],[20.5,1.5],[26.5,1.5],[4.5,17.5],[10.5,17.5],[15.5,17.5],[21.5,17.5],[27.5,17.5]],
+  lockerTiles:[[1.5,3.5],[14.5,3.5],[27.5,3.5],[1.5,7.5],[14.5,7.5],[27.5,7.5],[1.5,13.5],[27.5,13.5]],
+  lightSpotTiles:[[4.5,5.5],[14.5,5.5],[4.5,9.5],[24.5,9.5],[14.5,15.5]],
+  word:'',encodedWord:'',
+  pStart:[1.5,10.5],fStart:[28.5,10.5],
+  exit:{x:1.5,y:10.5},
+  envChanges:[],
+  msgs:Array(10).fill('').map((_,i)=>`▶ REMAINS FOUND — Victim ${i+1} of 10. Something is getting closer.`),
+  lockedRoom:null,safeRoom:null,
+  keyTile:null,
+},
 ];
 
 
@@ -539,6 +583,62 @@ function updListener(){
   // Proximity sanity drain
   if(dist<TILE*4){const f=1-dist/(TILE*4);P.sanity=Math.max(0,P.sanity-.05*f*(LIS.state==='alerted'?3:1));}
 }
+function updChaser(){
+  if(!LEVELS[lvlN]?.noMercy)return;
+  const dist=Math.hypot(P.x-F.x,P.y-F.y);
+  const spd=(1.6+bodyPartsFound*0.18)*safeRoomPenalty;
+
+  // Player hiding in locker
+  if(inLocker){
+    if(chaserState==='alert_locker'&&lockerPos){
+      // Move to locker position
+      const ld=Math.hypot(F.x-lockerPos.x,F.y-lockerPos.y);
+      if(ld>4){const nx=(lockerPos.x-F.x)/ld,ny=(lockerPos.y-F.y)/ld;F.x+=nx*spd*_dt;F.y+=ny*spd*_dt;resolve(F);}
+      lockerBreakTimer-=_dt;
+      if(lockerBreakTimer<=0){
+        // Tear open locker — kill player
+        inLocker=false;lockerPos=null;
+        P.health=0;shk=22;blood(P.x,P.y);sfxStatic(.07,.3);glitch=80;
+        if(!onPlayerDeath()){gs='dead';deadFr=fr;setTimeout(sfxDeadMusic,600);}
+        return;
+      }
+    } else {
+      // Search last seen position
+      if(chaserLastSeen){
+        const sd=Math.hypot(F.x-chaserLastSeen.x,F.y-chaserLastSeen.y);
+        if(sd>TILE){const nx=(chaserLastSeen.x-F.x)/sd,ny=(chaserLastSeen.y-F.y)/sd;F.x+=nx*spd*_dt;F.y+=ny*spd*_dt;resolve(F);}
+        else{chaserLastSeen=null;chaserSearchTimer=180+Math.random()*120;}
+      } else {
+        chaserSearchTimer-=_dt;
+        if(chaserSearchTimer<=0){
+          let px,py,tries=0;
+          do{px=(1+Math.floor(Math.random()*(MCOLS-2))+.5)*TILE;py=(1+Math.floor(Math.random()*(MROWS-2))+.5)*TILE;tries++;}
+          while(MAP[Math.floor(py/TILE)]&&MAP[Math.floor(py/TILE)][Math.floor(px/TILE)]!==0&&tries<40);
+          chaserLastSeen={x:px,y:py};chaserSearchTimer=120;
+        }
+      }
+    }
+    F.angle=Math.atan2(P.y-F.y,P.x-F.x);
+    return;
+  }
+
+  // Player visible — chase directly
+  chaserLastSeen={x:P.x,y:P.y};chaserState='chase';
+  if(dist>1){const nx=(P.x-F.x)/dist,ny=(P.y-F.y)/dist;F.x+=nx*spd*_dt;F.y+=ny*spd*_dt;resolve(F);}
+  F.angle=Math.atan2(P.y-F.y,P.x-F.x);
+  F.opacity=Math.min(0.92,F.opacity+.04);
+
+  // Footsteps
+  if(fr%Math.max(4,Math.floor(16-bodyPartsFound))===0&&dist<TILE*10)sfxFigureStep?.();
+
+  // Contact = death
+  if(dist<F.radius+P.radius+4){
+    P.health=0;shk=22;blood(P.x,P.y);sfxStatic(.07,.3);glitch=80;
+    if(!onPlayerDeath()){gs='dead';deadFr=fr;setTimeout(sfxDeadMusic,600);}
+  }
+  // Sanity drain — proximity
+  if(dist<TILE*5){const f=1-dist/(TILE*5);P.sanity=Math.max(0,P.sanity-.06*f*_dt);}
+}
 function playIntroMusic(){try{
   const now=A.currentTime;
   [[55,.020],[82,.010],[110,.007]].forEach(([f,v])=>{
@@ -643,6 +743,9 @@ document.addEventListener('keydown',e=>{
   if(notesOpen&&e.key==='Tab'){notesTab=notesTab==='docs'?'briefing':'docs';e.preventDefault?.();return;}
   if(notesOpen&&notesTab==='docs'&&(e.key==='ArrowDown'||e.key==='ArrowUp')){notesSelIdx=(notesSelIdx+(e.key==='ArrowDown'?1:-1)+Math.max(1,collectedDocs.length))%Math.max(1,collectedDocs.length);e.preventDefault?.();return;}
   if(gs==='settings'){
+    if(e.key.length===1&&/[a-zA-Z]/.test(e.key)){settingsPwd+=e.key.toLowerCase();return;}
+    if(e.key==='Backspace'){settingsPwd=settingsPwd.slice(0,-1);return;}
+    if(e.key==='Enter'){if(settingsPwd==='nomercy'){noMercyUnlocked=true;localStorage.setItem('noMercyUnlocked','1');settingsPwd='';}else{settingsPwd='';}return;}
     if(e.key==='Escape'){gs='title';return;}
     if(e.key==='1'){difficulty='veryeasy';settingsInsultShown=true;return;}
     if(e.key==='2'){difficulty='easy';settingsInsultShown=true;return;}
@@ -651,6 +754,8 @@ document.addEventListener('keydown',e=>{
     if(e.key==='5'){difficulty='insane';settingsInsultShown=false;return;}
     if(e.key==='6'&&godModeUnlocked){difficulty='godmode';settingsInsultShown=false;return;}
   }
+  if((e.key==='m'||e.key==='M')&&gs==='title'&&noMercyUnlocked){gs='nomercy_warn';return;}
+  if(e.key==='Escape'&&gs==='nomercy_warn'){gs='title';startTitleMusic();return;}
   if(e.key==='Escape'&&notesOpen){notesOpen=false;return;}
   if(e.key==='Escape'&&(gs==='help'||gs==='patchnotes')){gs='title';startTitleMusic();return;}
   if((e.key==='p'||e.key==='P'||e.key==='Escape')&&(gs==='playing'||paused)){paused=!paused;}
@@ -660,6 +765,7 @@ document.addEventListener('keyup',e=>{K[e.key.toLowerCase()]=false;});
 c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();const s=r.width/W;mX=(e.clientX-r.left)/s;mY=(e.clientY-r.top)/s;});
 c.addEventListener('click',()=>{
   A.resume();
+  if(gs==='nomercy_warn'){onAct();return;}
   if(notesOpen){
     const hdrH=36,tabH=22,contentY=hdrH+tabH;
     // Tab strip click
@@ -717,7 +823,14 @@ let sneakBreathTimer=0;let keycardFound=false;let lockedRoomOpen=false;let locke
 let godModeUnlocked=localStorage.getItem('godModeUnlocked')==='1';let checkpoint=null;let checkpointUsesLeft=0;let checkpointFlash=0;
 let safeRoomPenalty=1.0;let safeRoomTimer=0;let inSafeRoom=false;let safeRoomNotified=false;
 let helpShown=localStorage.getItem('helpShown')==='1';
+let noMercyUnlocked=localStorage.getItem('noMercyUnlocked')==='1';
+let settingsPwd='';
 let wallDrips=[],envFlicks=[],rainLeaks=[];
+let noMercyActive=false;
+let inLocker=false;let lockerPos=null;let lockerNoiseTimer=0;let lockerBreakTimer=0;
+let chaserState='chase';let chaserLastSeen=null;let chaserSearchTimer=0;
+let lightSpots=[];let lightSpotsDone=new Set();
+let bodyPartsFound=0;
 
 // ── ENTITIES ──────────────────────────────────────────────────────────
 const P={x:0,y:0,vx:0,vy:0,angle:0,radius:10,speed:1.55,
@@ -889,6 +1002,16 @@ function loadLevel(n){
     L.word=word;L.encodedWord=encodedWord;
     let ci=0;L.tapeData.forEach(td=>{if(td.clues&&td.clues.length>0){td.clues=[clues[ci]||''];ci++;}});
   }
+  if(L.noMercy){
+    // Place body parts at defined tile positions
+    tapes=L.bodyPartTiles.map((bt,i)=>({x:bt[0]*TILE,y:bt[1]*TILE,taken:false,i,special:false,clues:[],isBodyPart:true}));
+    tapesTotal=tapes.length;
+    lightSpots=L.lightSpotTiles.map((lt,i)=>({x:lt[0]*TILE,y:lt[1]*TILE,i}));
+    lightSpotsDone=new Set();
+    bodyPartsFound=0;
+    inLocker=false;lockerPos=null;chaserState='chase';chaserLastSeen=null;chaserSearchTimer=0;
+    noMercyActive=true;
+  }
   batteryPickups=[];
   if(n===0){if(difficulty==='veryeasy')batteryPickups.push({x:7.5*TILE,y:8.5*TILE,taken:false});briefingLog=[];notesTab='docs';}
   if(!LEVELS[n].prelude){
@@ -957,6 +1080,7 @@ function loadLevel(n){
 function updFigure(){
   if(LEVELS[lvlN].noFigure)return;
   if(LEVELS[lvlN].useListener)return;
+  if(LEVELS[lvlN].noMercy)return;
   if(LEVELS[lvlN].safeRoom){
     const sr=LEVELS[lvlN].safeRoom;
     const pTx=Math.floor(P.x/TILE),pTy=Math.floor(P.y/TILE);
@@ -1332,11 +1456,25 @@ function updPlayer(){
       } else {tapeBeepTimer=0;}
     }
   }
+  // Light spots (No Mercy sanity regen)
+  if(LEVELS[lvlN]?.noMercy){
+    LEVELS[lvlN].lightSpotTiles?.forEach((lt,i)=>{
+      if(lightSpotsDone.has(i))return;
+      if(Math.hypot(P.x-lt[0]*TILE,P.y-lt[1]*TILE)<TILE*.9){
+        P.sanity=Math.min(100,P.sanity+20);lightSpotsDone.add(i);
+        msg='A faint light. Your head clears slightly.';msgFr=fr;
+      }
+    });
+  }
   tapes.forEach((t,i)=>{
     if(t.taken)return;
     if(Math.hypot(P.x-t.x,P.y-t.y)<TILE*.75){
       t.taken=true;P.tapes++;
       if(LEVELS[lvlN].useListener)noiseLevel=Math.min(100,noiseLevel+18);
+      if(t.isBodyPart){
+        bodyPartsFound++;
+        try{const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(mg);o.type='sawtooth';o.frequency.setValueAtTime(60,A.currentTime);o.frequency.exponentialRampToValueAtTime(20,A.currentTime+.8);g.gain.setValueAtTime(.08,A.currentTime);g.gain.exponentialRampToValueAtTime(.0001,A.currentTime+.9);o.start();o.stop(A.currentTime+1);}catch(e){}
+      }
       msg=LEVELS[lvlN].msgs[i]||'';msgFr=fr;
       if(difficulty==='insane'&&!checkpoint){checkpoint={x:P.x,y:P.y,health:P.health,sanity:Math.max(P.sanity,30),battery:P.battery,stamina:P.stamina,tapes:P.tapes,takenMap:tapes.map(t2=>t2.taken)};checkpointFlash=180;}
       if(t.special){sfxVoiceTape();glitch=28;}
@@ -1348,6 +1486,10 @@ function updPlayer(){
       }
     }
   });
+  // No Mercy win condition
+  if(LEVELS[lvlN]?.noMercy&&P.tapes>=tapesTotal&&tapesTotal>0&&gs==='playing'){
+    gs='win';winFr=fr;paused=false;noMercyActive=false;sfxWin();
+  }
   docs.forEach(d=>{
     if(d.taken)return;
     if(Math.hypot(P.x-d.x,P.y-d.y)<TILE*.75){
@@ -1368,7 +1510,7 @@ function updPlayer(){
       msg=LEVELS[lvlN].prelude?'SPARE BATTERY FOUND  --  Left in the yard. Take it inside.  [ R ]  to recharge flashlight when needed.':'SPARE BATTERY RECOVERED  --  PRESS R TO RECHARGE';msgFr=fr;
     }
   });
-  if(Math.hypot(P.x-exitPos.x,P.y-exitPos.y)<TILE*.9&&P.tapes>=tapesTotal){
+  if(!LEVELS[lvlN]?.noMercy&&Math.hypot(P.x-exitPos.x,P.y-exitPos.y)<TILE*.9&&P.tapes>=tapesTotal){
     if(LEVELS[lvlN].prelude){
       if(lvlN<LEVELS.length-1){gs='transition';transFr=fr;}
       else{gs='win';winFr=fr;creditsActive=false;sfxWin();}
@@ -1413,10 +1555,38 @@ function onAct(){
     }
   }
   if(evidenceActive){evidenceActive=false;evidenceTimer=0;return;}
+  // No Mercy locker interaction
+  if(gs==='playing'&&LEVELS[lvlN]?.noMercy&&!paused){
+    if(!inLocker){
+      // Find nearest locker
+      const L6=LEVELS[lvlN];
+      const lk=L6.lockerTiles?.find(lt=>Math.hypot(P.x-lt[0]*TILE,P.y-lt[1]*TILE)<TILE*1.2);
+      if(lk){
+        const chaserDist=Math.hypot(F.x-lk[0]*TILE,F.y-lk[1]*TILE);
+        inLocker=true;lockerPos={x:lk[0]*TILE,y:lk[1]*TILE};
+        P.x=lk[0]*TILE;P.y=lk[1]*TILE;
+        if(chaserDist<TILE*3.5){
+          chaserState='alert_locker';lockerBreakTimer=300;
+          msg='⚠ IT HEARD YOU GET IN.';msgFr=fr;
+          if(LEVELS[lvlN].useListener)noiseLevel=Math.min(100,noiseLevel+60);
+        } else {
+          chaserState='search';chaserLastSeen={x:P.x,y:P.y};chaserSearchTimer=240;
+          msg='Hiding. Stay still.';msgFr=fr;
+        }
+        return;
+      }
+    } else {
+      // Exit locker — only if Chaser not adjacent
+      const chaserDist=lockerPos?Math.hypot(F.x-lockerPos.x,F.y-lockerPos.y):999;
+      if(chaserDist>TILE*2.5){inLocker=false;lockerPos=null;chaserState='chase';return;}
+      else{msg='Too close — wait.';msgFr=fr;return;}
+    }
+  }
+  if(gs==='nomercy_warn'){noMercyActive=true;gs='playing';lvlN=6;loadLevel(6);return;}
   if(gs==='title'){titleMusicStarted=false;startBGMusic();gs='playing';lvlN=0;loadLevel(0);return;}
   if(gs==='help'||gs==='patchnotes'){gs='title';startTitleMusic();return;}
-  if(gs==='dead'){paused=false;gs='playing';lvlN=0;loadLevel(0);return;}
-  if(gs==='win'){if(!creditsActive){creditsActive=true;return;}paused=false;creditsActive=false;gs='title';startTitleMusic();return;}
+  if(gs==='dead'){paused=false;noMercyActive=false;inLocker=false;lockerPos=null;gs='playing';lvlN=0;loadLevel(0);return;}
+  if(gs==='win'){if(!creditsActive){creditsActive=true;return;}paused=false;creditsActive=false;noMercyActive=false;inLocker=false;lockerPos=null;gs='title';startTitleMusic();return;}
   if(gs==='transition'&&fr-transFr>90){paused=false;lvlN++;loadLevel(lvlN);gs='playing';return;}
 }
 
@@ -1563,6 +1733,7 @@ function drwPlayer(sx,sy){
 
 // ── DRAW TAPES ────────────────────────────────────────────────────────
 function drwTapes(cx,cy){
+  if(LEVELS[lvlN]?.noMercy)return;// Body parts rendered by drwNoMercyWorld
   tapes.forEach(t=>{
     if(t.taken)return;const sx=t.x-cx,sy=t.y-cy;if(sx<-60||sx>W+60||sy<-60||sy>H+60)return;
     const pulse=.55+.45*Math.sin(fr*.065);
@@ -1823,7 +1994,7 @@ function drwHUD(){
     ctx.fillStyle=hasKey?'rgba(68,188,88,.76)':'rgba(210,178,55,.76)';ctx.font='bold 11px monospace';ctx.textAlign='center';
     ctx.fillText(hasKey?'MASTER KEY — RECOVERED':'MASTER KEY — NOT FOUND',W/2,difficulty==='godmode'?28:24);
   }else{
-    ctx.fillStyle=P.tapes>=tapesTotal?'rgba(68,188,88,.76)':'rgba(188,150,50,.76)';ctx.font='bold 11px monospace';ctx.textAlign='center';ctx.fillText(`EVIDENCE TAPES  ${P.tapes}/${tapesTotal}`,W/2,difficulty==='godmode'?28:24);
+    ctx.fillStyle=P.tapes>=tapesTotal?'rgba(68,188,88,.76)':'rgba(188,150,50,.76)';ctx.font='bold 11px monospace';ctx.textAlign='center';ctx.fillText(LEVELS[lvlN]?.noMercy?`REMAINS FOUND  ${P.tapes}/${tapesTotal}`:`EVIDENCE TAPES  ${P.tapes}/${tapesTotal}`,W/2,difficulty==='godmode'?28:24);
     if(LEVELS[lvlN].lockedRoom){ctx.font='7px monospace';ctx.fillStyle=lockedRoomOpen?'rgba(0,200,160,0.72)':keycardFound?'rgba(0,200,220,0.72)':'rgba(130,100,40,0.55)';ctx.fillText(lockedRoomOpen?'▣ RESTRICTED ROOM: OPEN':keycardFound?'▣ KEYCARD HELD — [SPACE] NEAR DOOR':'▣ KEYCARD NOT FOUND',W/2,difficulty==='godmode'?38:34);}
   }
   if(msg&&fr-msgFr<500){
@@ -2035,7 +2206,7 @@ function drwTitle(){
   // Bottom bar hints
   ctx.textAlign='center';
   ctx.fillStyle='rgba(155,128,50,0.72)';ctx.font='bold 11px monospace';
-  ctx.fillText('[ S ]  SETTINGS    [ H ]  INSTRUCTIONS    [ P ]  PATCH NOTES',W/2,H-8);
+  ctx.fillText(noMercyUnlocked?'[ S ]  SETTINGS    [ H ]  INSTRUCTIONS    [ P ]  PATCH NOTES    [ M ]  NO MERCY':'[ S ]  SETTINGS    [ H ]  INSTRUCTIONS    [ P ]  PATCH NOTES',W/2,H-8);
   drwVHSHorror();
 }
 function drwHelp(){
@@ -2408,6 +2579,14 @@ function drwSettings(){
   // Difficulty applied text
   ctx.fillStyle=difficulty==='godmode'?'rgba(220,180,0,0.6)':difficulty==='insane'?'rgba(160,60,220,0.6)':'rgba(100,85,40,0.42)';ctx.font='8px monospace';
   ctx.fillText(`CURRENT: ${difficulty.toUpperCase()}`,W/2,H*.84);
+  // Password field for No Mercy unlock
+  if(noMercyUnlocked){
+    ctx.fillStyle='rgba(220,40,40,0.90)';ctx.font='bold 9px monospace';ctx.textAlign='center';
+    ctx.fillText('[ NO MERCY UNLOCKED ]',W/2,H-8);
+  } else {
+    ctx.fillStyle='rgba(100,80,40,0.55)';ctx.font='8px monospace';ctx.textAlign='center';
+    ctx.fillText('PASSWORD: '+settingsPwd.replace(/./g,'*'),W/2,H-8);
+  }
 }
 function drwMiniMap(){
   const tw=4,th=4,mw=MCOLS*tw,mh=MROWS*th,mx=W-mw-10,my=H-mh-14;
@@ -2510,7 +2689,13 @@ function drwWin(){
     '',
     '[ CASE FILE — SEALED INDEFINITELY ]',
   ].forEach((l,i)=>ctx.fillText(l,W/2,H/2-88+i*15));
-  if(difficulty==='veryeasy'){
+  if(noMercyActive||LEVELS[lvlN]?.noMercy){
+    ctx.fillStyle='rgba(180,40,40,0.90)';ctx.font='bold 14px monospace';ctx.textAlign='center';
+    ctx.fillText('ALL TEN RECOVERED.',W/2,H/2-10);
+    ctx.fillStyle='rgba(180,120,120,0.65)';ctx.font='10px monospace';
+    ctx.fillText('You found every one of them. You know the whole truth now.',W/2,H/2+10);
+  }
+  if(difficulty==='veryeasy'&&!LEVELS[lvlN]?.noMercy){
     ctx.fillStyle='rgba(140,180,100,0.60)';ctx.font='italic 9px monospace';
     ctx.fillText('You completed CASE FILE 1994 on VERY EASY.',W/2,H-44);
     ctx.fillStyle='rgba(140,180,100,0.42)';ctx.font='9px monospace';
@@ -2627,6 +2812,105 @@ function drwExitPuzzle(){
   ctx.drawImage(scanC,0,0);
 }
 
+function drwNoMercyWorld(cx,cy){
+  if(!LEVELS[lvlN]?.noMercy)return;
+  const L6=LEVELS[lvlN];
+  // Draw lockers
+  L6.lockerTiles?.forEach(lt=>{
+    const sx=lt[0]*TILE-cx,sy=lt[1]*TILE-cy;
+    if(sx<-TILE*2||sx>W+TILE*2||sy<-TILE*2||sy>H+TILE*2)return;
+    const active=inLocker&&lockerPos&&Math.hypot(lockerPos.x-lt[0]*TILE,lockerPos.y-lt[1]*TILE)<2;
+    ctx.fillStyle=active?'rgba(60,80,60,0.85)':'rgba(40,30,20,0.80)';
+    ctx.fillRect(sx-TILE*.4,sy-TILE*.45,TILE*.8,TILE*.9);
+    ctx.strokeStyle=active?'rgba(100,180,100,0.70)':'rgba(120,90,50,0.65)';
+    ctx.lineWidth=1;ctx.strokeRect(sx-TILE*.4,sy-TILE*.45,TILE*.8,TILE*.9);
+    ctx.fillStyle=active?'rgba(120,200,120,0.80)':'rgba(160,130,80,0.65)';
+    ctx.font='8px monospace';ctx.textAlign='center';
+    ctx.fillText(active?'[IN]':'[L]',sx,sy+3);
+  });
+  // Draw light spots
+  L6.lightSpotTiles?.forEach((lt,i)=>{
+    if(lightSpotsDone.has(i))return;
+    const sx=lt[0]*TILE-cx,sy=lt[1]*TILE-cy;
+    if(sx<-TILE*2||sx>W+TILE*2||sy<-TILE*2||sy>H+TILE*2)return;
+    const pulse=.5+.5*Math.sin(fr*.08);
+    ctx.fillStyle=`rgba(255,240,160,${0.12+pulse*.10})`;
+    ctx.beginPath();ctx.arc(sx,sy,TILE*.7,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=`rgba(255,245,200,${0.55+pulse*.25})`;
+    ctx.beginPath();ctx.arc(sx,sy,TILE*.18,0,Math.PI*2);ctx.fill();
+  });
+  // Body part pickups (render as glowing red dots)
+  tapes.forEach(t=>{
+    if(t.taken)return;
+    const sx=t.x-cx,sy=t.y-cy;
+    if(sx<-TILE*2||sx>W+TILE*2||sy<-TILE*2||sy>H+TILE*2)return;
+    const pulse=.5+.5*Math.sin(fr*.1+t.i);
+    ctx.fillStyle=`rgba(180,40,40,${0.55+pulse*.25})`;
+    ctx.beginPath();ctx.arc(sx,sy,TILE*.22,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=`rgba(220,80,60,${0.40+pulse*.20})`;ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(sx,sy,TILE*.38,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle=`rgba(220,160,160,0.90)`;ctx.font='7px monospace';ctx.textAlign='center';
+    ctx.fillText('✝',sx,sy+2.5);
+  });
+}
+function drwHallucination(cx,cy){
+  if(P.sanity>=30||!LEVELS[lvlN]?.noMercy)return;
+  const intensity=(30-P.sanity)/30;
+  // Fake figure ghost
+  if(fr%90<45){
+    const hx=P.x+(Math.sin(fr*.07)*TILE*6)-cx;
+    const hy=P.y+(Math.cos(fr*.05)*TILE*5)-cy;
+    ctx.fillStyle=`rgba(200,180,160,${intensity*.35})`;
+    ctx.beginPath();ctx.arc(hx,hy,8,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=`rgba(180,160,140,${intensity*.25})`;
+    ctx.fillRect(hx-6,hy+8,12,20);
+  }
+  // Screen vignette darkening
+  const grad=ctx.createRadialGradient(W/2,H/2,H*.2,W/2,H/2,H*.7);
+  grad.addColorStop(0,'transparent');
+  grad.addColorStop(1,`rgba(80,0,0,${intensity*.45})`);
+  ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
+  // Random static flashes
+  if(Math.random()<intensity*.04){
+    ctx.fillStyle=`rgba(255,255,255,${Math.random()*.08})`;
+    ctx.fillRect(Math.random()*W,Math.random()*H,Math.random()*40+10,2);
+  }
+}
+function drwNoMercyWarn(){
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+  for(let i=0;i<80;i++){ctx.fillStyle=`rgba(180,20,20,${Math.random()*.04})`;ctx.fillRect(Math.random()*W,Math.random()*H,Math.random()*3+1,1);}
+  const bx=W/2-300,by=60,bw=600,bh=H-120;
+  ctx.fillStyle='rgba(8,0,0,0.97)';ctx.fillRect(bx,by,bw,bh);
+  ctx.strokeStyle='rgba(180,30,30,0.70)';ctx.lineWidth=2;ctx.strokeRect(bx,by,bw,bh);
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(220,40,40,0.95)';ctx.font='bold 16px monospace';
+  ctx.fillText('⚠  NO MERCY MODE  ⚠',W/2,by+36);
+  ctx.strokeStyle='rgba(180,30,30,0.35)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(bx+20,by+48);ctx.lineTo(bx+bw-20,by+48);ctx.stroke();
+  ctx.fillStyle='rgba(210,160,160,0.88)';ctx.font='11px monospace';
+  const lines=[
+    'ALDRIC CONTAINMENT BLOCK — NOVEMBER 7, 1994',
+    '',
+    'There are ten of them in there.',
+    'What is left of them.',
+    '',
+    'You know what happened here.',
+    'You need to find every one.',
+    '',
+    '— THE CHASER does not stop.',
+    '— It grows faster with every body part you recover.',
+    '— Hide in LOCKERS [ SPACE ] when near.',
+    '— If it hears you enter — it will tear the door open.',
+    '— Light sources restore sanity. Find them.',
+    '— Sanity below 30%: you will see things that are not there.',
+    '',
+    'There is no exit. Only completion.',
+    'Collect all 10 to end this.',
+  ];
+  let ly=by+70;
+  lines.forEach(l=>{ctx.fillStyle=l.startsWith('—')?'rgba(220,120,100,0.90)':l===''?'rgba(0,0,0,0)':'rgba(210,180,180,0.82)';ctx.fillText(l,W/2,ly);ly+=16;});
+  if(Math.sin(fr*.07)>0){ctx.fillStyle='rgba(210,60,60,0.88)';ctx.font='bold 12px monospace';ctx.fillText('▶  CLICK OR SPACE TO BEGIN — ESC TO CANCEL  ◀',W/2,by+bh-20);}
+  drwVHSHorror();
+}
 // ── MAIN LOOP ─────────────────────────────────────────────────────────
 function loop(now=performance.now()){
   _dt=_lastT?Math.min((now-_lastT)/16.667,2.5):1;_lastT=now;
@@ -2634,13 +2918,14 @@ function loop(now=performance.now()){
   ambT++;if(ambT>=192){ambT=0;if(A.state==='running')tickAmb();}
   if(gs==='playing'&&!paused){
     updPlayer();
-    if(!evidenceActive){updFigure();updListener();updGhost();updPhantom();updEnv();updParts();updRain();updThunder();updNoise();updEnvAnim();}
+    if(!evidenceActive){updFigure();updListener();if(LEVELS[lvlN]?.noMercy)updChaser();updGhost();updPhantom();updEnv();updParts();updRain();updThunder();updNoise();updEnvAnim();}
     else{updParts();}
     camX=Math.max(0,Math.min(MCOLS*TILE-W,P.x-W/2));
     camY=Math.max(0,Math.min(MROWS*TILE-H,P.y-H/2));
     if(shk>0){skx=(Math.random()-.5)*shk*2;sky=(Math.random()-.5)*shk*2;shk*=.78;if(shk<.16){shk=0;skx=0;sky=0;}}
   }
   if(gs==='intro'){drwIntro();requestAnimationFrame(loop);return;}
+  if(gs==='nomercy_warn'){drwNoMercyWarn();requestAnimationFrame(loop);return;}
   if(gs==='settings'){drwSettings();requestAnimationFrame(loop);return;}
   if(gs==='title'){drwTitle();requestAnimationFrame(loop);return;}
   if(gs==='help'){drwHelp();requestAnimationFrame(loop);return;}
@@ -2649,7 +2934,7 @@ function loop(now=performance.now()){
   ctx.save();if(shk>0)ctx.translate(skx,sky);
   ctx.fillStyle='#0d0a07';ctx.fillRect(0,0,W,H);
   if(mapCache)ctx.drawImage(mapCache,-camX,-camY);
-  drwSafeRoom(camX,camY);drwEnv(camX,camY);drwEnvAnim(camX,camY);drwTapes(camX,camY);drwDocs(camX,camY);drwBatts(camX,camY);drwKeycard(camX,camY);drwLockedDoor(camX,camY);drwExit(camX,camY);
+  drwSafeRoom(camX,camY);drwEnv(camX,camY);drwEnvAnim(camX,camY);drwNoMercyWorld(camX,camY);drwTapes(camX,camY);drwDocs(camX,camY);drwBatts(camX,camY);drwKeycard(camX,camY);drwLockedDoor(camX,camY);drwExit(camX,camY);
   // VHS ghost: 1-2 frame flash of a figure that isn't there (not on Listener levels)
   if(ghostFr>0&&!LEVELS[lvlN]?.useListener){ghostFr--;drwFigure(ghostX-camX,ghostY-camY,.18+Math.random()*.1,true);ctx.fillStyle='rgba(205,195,178,0.03)';ctx.fillRect(ghostX-camX-30,ghostY-camY-40,60,80);}
   // The figure (only on non-Listener levels)
@@ -2681,6 +2966,7 @@ function loop(now=performance.now()){
       ctx.fillStyle=pg2;ctx.fillRect(0,0,W,H);
     }
   }
+  drwHallucination(camX,camY);
   if(gs!=='dead'&&gs!=='win'){drwAnalogue();drwHUD();if(difficulty==='veryeasy')drwMiniMap();drwCheckpointFlash();drwEvidence();drwExitPuzzle();}
   if(paused){
     ctx.fillStyle='rgba(0,0,0,0.62)';ctx.fillRect(0,0,W,H);
