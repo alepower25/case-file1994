@@ -647,7 +647,7 @@ document.addEventListener('keydown',e=>{
   e.preventDefault?.();
 },{passive:false});
 document.addEventListener('keyup',e=>{K[e.key.toLowerCase()]=false;});
-c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();mX=e.clientX-r.left;mY=e.clientY-r.top;});
+c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();const s=r.width/W;mX=(e.clientX-r.left)/s;mY=(e.clientY-r.top)/s;});
 c.addEventListener('click',()=>{
   A.resume();
   if(notesOpen){
